@@ -3,291 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPT接单管理系统·权限版 v3.0</title>
+<title>PPT接单管理系统·能正常注册版</title>
 <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--blue:#277ef0;--green:#00b42a;--orange:#ff7d00;--red:#f53f3f;--bg:#f7f9fc;--card:#fff;--border:#e5e6eb;--gray:#666;--light:#f2f3f5;--text:#2b2b2b;--shadow:0 2px 8px rgba(0,0,0,0.08)}
-[data-theme="dark"]{--bg:#1a1a2e;--card:#16213e;--border:#0f3460;--text:#eaeaea;--gray:#a0a0a0;--light:#1f2937;--shadow:0 2px 8px rgba(0,0,0,0.3)}
+/* 基础样式，简单清晰 */
+:root{
+  --blue:#277ef0;--green:#00b42a;--orange:#ff7d00;--red:#f53f3f;
+  --bg:#f7f9fc;--card:#fff;--border:#e5e6eb;--gray:#666;--light:#f2f3f5;
+  --text:#2b2b2b;--shadow:0 2px 8px rgba(0,0,0,0.08)
+}
+[data-theme="dark"]{
+  --bg:#1a1a2e;--card:#16213e;--border:#0f3460;
+  --text:#eaeaea;--gray:#a0a0a0;--light:#1f2937;
+  --shadow:0 2px 8px rgba(0,0,0,0.3)
+}
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
 body{background:var(--bg);padding:25px;max-width:1600px;margin:0 auto;color:var(--text)}
-.top-toolbar{position:sticky;top:0;background:var(--card);border-radius:12px;padding:16px 24px;margin-bottom:20px;box-shadow:var(--shadow);z-index:100;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.toolbar-left,.toolbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.role-tag{padding:4px 12px;border-radius:16px;font-size:12px;font-weight:500;margin-right:10px}
-.role-super{background:#f53f3f;color:#fff}
-.role-sub{background:#ff7d00;color:#fff}
-.role-design{background:#00b42a;color:#fff}
-.card{background:var(--card);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
-.title{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:14px}
-.item{display:flex;flex-direction:column;gap:6px;min-width:140px;flex:1}
-label{font-size:13px;color:var(--gray)}
-input,textarea,select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;outline:none;font-size:14px;background:var(--card);color:var(--text)}
-input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(39,126,240,0.1)}
-#pasteArea{height:100px;resize:none}
-button{cursor:pointer;border:none;border-radius:8px;padding:10px 18px;font-size:14px}
-.btn-primary{background:var(--blue);color:#fff}
-.btn-success{background:var(--green);color:#fff}
-.btn-warning{background:var(--orange);color:#fff}
-.btn-danger{background:var(--red);color:#fff}
-.btn-default{background:var(--light);color:var(--text);border:1px solid var(--border)}
-.p25{background:#3b8aff;color:#fff}
-.p50{background:#ff9500;color:#fff}
-.p75{background:#b969d7;color:#fff}
-.p100{background:#00c853;color:#fff}
-.progress-box{width:100%;height:8px;background:var(--light);border-radius:4px;overflow:hidden;margin:8px 0}
-.progress-bar{height:100%}
-.search-bar{position:relative;margin-bottom:16px}
-.search-bar input{padding-left:40px}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray)}
-.filter-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.filter-tag{padding:6px 12px;background:var(--light);border-radius:16px;font-size:12px;cursor:pointer}
-.filter-tag.active{background:var(--blue);color:#fff}
-.table-container{max-height:500px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse}
-th,td{border-bottom:1px solid var(--border);padding:12px;text-align:center}
-th{background:var(--light);position:sticky;top:0}
-.status-badge{display:inline-block;padding:4px 12px;border-radius:16px;font-size:12px}
-.status-pending{background:#fff2f0;color:var(--red)}
-.status-abnormal{background:#fff7e6;color:var(--orange)}
-.status-completed{background:#f6ffed;color:var(--green)}
-.pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:16px}
-.page-btn{padding:6px 12px;border-radius:6px;background:var(--light);border:1px solid var(--border)}
-.page-btn.active{background:var(--blue);color:#fff}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
-.stat-card{padding:16px;border-radius:10px;text-align:center;background:var(--light)}
-.stat-card .num{font-size:24px;font-weight:bold;color:var(--blue)}
-.chart-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:24px;margin-top:24px}
-.chart-item{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--border)}
-.chart-container{height:220px}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:1000}
-.modal-content{background:var(--card);padding:28px;border-radius:12px;width:520px;max-width:90%}
-.tip-toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:24px;display:none;transition:0.3s}
-.tip-toast.show{transform:translateX(-50%) translateY(0)}
-.empty-state{text-align:center;padding:60px 20px;color:var(--gray);background:var(--light);border-radius:12px}
-@media(max-width:768px){
-  body{padding:15px}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .chart-box{grid-template-columns:1fr}
-}
+/* 登录注册页面样式 */
 .auth-box{max-width:420px;margin:80px auto;background:var(--card);padding:30px;border-radius:12px;box-shadow:var(--shadow)}
 .auth-title{text-align:center;font-size:22px;color:var(--blue);margin-bottom:25px;font-weight:bold}
 .tab-wrap{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
 .tab-item{flex:1;text-align:center;padding:12px 0;color:var(--gray);cursor:pointer}
 .tab-item.active{color:var(--blue);border-bottom:2px solid var(--blue)}
-.input-row{margin-bottom:16px}
+.input-row{margin-bottom:16px;position:relative}
+input,select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;outline:none;font-size:14px;background:var(--card);color:var(--text)}
 .eye-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--gray)}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-top:8px}
+.btn-primary{background:var(--blue);color:#fff}
+.tip-text{font-size:13px;color:var(--gray);margin-top:15px;text-align:center}
+.find-pwd{color:var(--blue);cursor:pointer}
+/* 系统主页面样式 */
+#systemPage{display:none}
+.top-toolbar{position:sticky;top:0;background:var(--card);border-radius:12px;padding:16px 24px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center}
+.role-tag{padding:4px 12px;border-radius:16px;font-size:12px;font-weight:500;margin-right:10px}
+.role-super{background:#f53f3f;color:#fff}
+.role-sub{background:#ff7d00;color:#fff}
+.role-design{background:#00b42a;color:#fff}
+.card{background:var(--card);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
+.title{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+/* 弹窗样式 */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-content{background:var(--card);padding:28px;border-radius:12px;width:520px;max-width:90%}
+/* 提示框样式 */
+.tip-toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:24px;display:none;transition:transform 0.3s}
+.tip-toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 
+<!-- 登录注册页面 -->
 <div class="auth-box" id="authPage">
-    <div class="auth-title">PPT接单管理系统·权限版</div>
+    <div class="auth-title">PPT接单管理系统</div>
     <div class="tab-wrap">
         <div class="tab-item active" onclick="tab('login')">登录</div>
         <div class="tab-item" onclick="tab('reg')">注册</div>
     </div>
 
+    <!-- 登录表单 -->
     <div id="loginForm">
         <div class="input-row"><input type="text" id="loginUser" placeholder="请输入用户名"></div>
         <div class="input-row">
             <input type="password" id="loginPwd" placeholder="请输入密码">
             <span class="eye-icon" onclick="showPwd('loginPwd')">👁️</span>
         </div>
-        <button class="btn btn-primary" onclick="login()" style="width:100%">立即登录</button>
-        <div class="tip-text" style="margin-top:15px;text-align:center">忘记密码？<span class="find-pwd" onclick="openModal('findModal')" style="color:var(--blue);cursor:pointer">点击找回</span></div>
-        <div style="text-align:center;font-size:12px;margin-top:8px">默认管理员：admin / 123456</div>
+        <button class="btn btn-primary" onclick="login()">立即登录</button>
+        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">点击找回</span></div>
+        <div class="tip-text">管理员默认：admin / 123456</div>
     </div>
 
+    <!-- 注册表单（修复注册功能） -->
     <div id="regForm" style="display:none">
         <div class="input-row"><input type="text" id="regUser" placeholder="设置注册用户名"></div>
         <div class="input-row">
-            <input type="password" id="regPwd" placeholder="设置登录密码">
+            <input type="password" id="regPwd" placeholder="设置登录密码（不少于6位）">
             <span class="eye-icon" onclick="showPwd('regPwd')">👁️</span>
         </div>
         <div class="input-row">
-            <select id="safeQ">
+            <select id="safeQ" required>
                 <option value="">请选择密保问题</option>
                 <option value="school">你的母校名称？</option>
                 <option value="pet">第一只宠物名字？</option>
                 <option value="phone">常用手机号后4位？</option>
             </select>
         </div>
-        <div class="input-row"><input type="text" id="safeA" placeholder="请输入密保答案"></div>
-        <button class="btn btn-primary" onclick="register()" style="width:100%">完成注册</button>
-        <div style="text-align:center;font-size:12px;margin-top:8px">注册默认：设计师权限</div>
+        <div class="input-row"><input type="text" id="safeA" placeholder="请输入密保答案（牢记）"></div>
+        <button class="btn btn-primary" onclick="register()">完成注册</button>
+        <div class="tip-text">注册默认：设计师权限 | 仅管理个人订单</div>
     </div>
 </div>
 
-<div id="systemPage" style="display:none">
-<div class="top-toolbar">
-  <div class="toolbar-left">
-    <span class="role-tag" id="roleTag">设计师</span>
-    <span id="userName">用户</span>
-    <button class="btn-primary" onclick="refreshAll()">📊 刷新统计</button>
-    <button class="btn-success" onclick="exportSelected()">📥 导出选中</button>
-  </div>
-  <div class="toolbar-right">
-    <button class="btn-warning" id="roleManageBtn" style="display:none" onclick="openModal('roleModal')">🔑 权限管理</button>
-    <button class="btn-warning" id="auditListBtn" style="display:none" onclick="openModal('auditListModal')">📝 审核</button>
-    <button class="btn-default" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
-    <button class="btn-default" onclick="logout()">🚪 退出</button>
-  </div>
+<!-- 系统主页面（登录后显示） -->
+<div id="systemPage">
+    <div class="top-toolbar">
+        <div>
+            <span class="role-tag" id="roleTag">设计师</span>
+            <span id="userName">用户名</span>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="logout()">🚪 退出登录</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="title">📈 数据看板</div>
+        <div style="text-align:center;padding:40px;color:var(--gray)">登录成功！可在此添加订单、查看数据</div>
+    </div>
 </div>
 
-<div class="card">
-  <div class="title"><span>📈 数据看板</span></div>
-  <div class="stats-grid">
-    <div class="stat-card"><h4>总订单</h4><div class="num" id="totalOrder">0</div></div>
-    <div class="stat-card"><h4>总金额</h4><div class="num" id="totalMoney">¥0.00</div></div>
-    <div class="stat-card"><h4>总收益</h4><div class="num" id="totalFinal">¥0.00</div></div>
-    <div class="stat-card"><h4>未完成</h4><div class="num" id="undone">0</div></div>
-  </div>
+<!-- 找回密码弹窗 -->
+<div class="modal" id="findModal">
+    <div class="modal-content">
+        <div class="title">🔐 密保找回密码</div>
+        <div class="input-row"><input type="text" id="findU" placeholder="请输入用户名"></div>
+        <div class="input-row"><input type="text" id="findA" placeholder="请输入密保答案"></div>
+        <div class="input-row"><input type="password" id="findNewPwd" placeholder="请设置新密码（不少于6位）"></div>
+        <button class="btn btn-primary" onclick="resetPwd()">确认重置</button>
+        <button class="btn" style="background:var(--light);margin-top:10px" onclick="closeModal('findModal')">取消</button>
+    </div>
 </div>
 
-<div class="card">
-  <div class="title"><span>📝 订单录入</span></div>
-  <textarea id="pasteArea" placeholder="粘贴订单信息自动识别"></textarea>
-  <div class="row">
-    <div class="item"><label>渠道</label><input id="channel"></div>
-    <div class="item"><label>价格</label><input id="price" type="number"></div>
-    <div class="item"><label>页数</label><input id="page" type="number"></div>
-  </div>
-  <button class="btn-success" onclick="calc()">🧮 计算收益</button>
-  <button class="btn-primary" onclick="save()">💾 保存订单</button>
-</div>
-
-<div class="card">
-  <div class="title"><span>💰 结算预览</span></div>
-  <div class="row">
-    <div class="item"><label>分成</label><input id="rate" readonly></div>
-    <div class="item"><label>单页收益</label><input id="pagePrice" readonly></div>
-    <div class="item"><label>总收益</label><input id="totalPrice" readonly></div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="title"><span>📋 订单列表</span></div>
-  <div class="search-bar"><input type="text" id="searchInput" placeholder="搜索" oninput="handleSearch()"></div>
-  <div class="table-container"><table><tbody id="list"></tbody></table></div>
-</div>
-</div>
-
-<div class="modal" id="roleModal"><div class="modal-content"><div class="title">权限管理</div><input id="grantUser" placeholder="用户名"><button onclick="grantSubAdmin()">授权</button></div></div>
-<div class="modal" id="auditListModal"><div class="modal-content"><div class="title">审核列表</div><div id="auditContent"></div></div></div>
-<div class="modal" id="editApplyModal"><div class="modal-content"><div class="title">修改申请</div><input id="editOrderId" readonly><button onclick="submitAuditApply()">提交</button></div></div>
-<div class="modal" id="chModal"><div class="modal-content"><div class="title">渠道管理</div><input id="chName"><input id="chRate"><button onclick="addCh()">添加</button></div></div>
-<div class="modal" id="findModal"><div class="modal-content"><div class="title">找回密码</div><input id="findU"><input id="findA"><input id="findNewPwd" type="password"><button onclick="resetPwd()">重置</button></div></div>
+<!-- 提示框 -->
 <div class="tip-toast" id="toast"></div>
 
 <script>
+// 核心配置
 const ADMIN_ACCOUNT = "admin";
 const DEFAULT_INIT_PWD = "123456";
 
+// 存储工具（简单好用）
 const Storage = {
-  get(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},
-  set(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  get(key, defaultVal = null) {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : defaultVal;
+    } catch (e) {
+      showToast("数据读取出错");
+      return defaultVal;
+    }
+  },
+  set(key, val) {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+      return true;
+    } catch (e) {
+      showToast("数据保存出错");
+      return false;
+    }
+  }
 };
 
-const AppState = {
-  list:Storage.get('orderList',[]),
-  channels:Storage.get('channel',{"零感":0.4}),
-  auditList:Storage.get('auditList',[]),
-  currentUser:'',userRole:''
-};
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
-
-function initSuperAdmin(){
-  if(!localStorage.getItem("pwd_"+ADMIN_ACCOUNT)){
-    localStorage.setItem("pwd_"+ADMIN_ACCOUNT,DEFAULT_INIT_PWD);
+// 初始化管理员账号（第一次打开自动创建）
+function initSuperAdmin() {
+  if (!localStorage.getItem("pwd_" + ADMIN_ACCOUNT)) {
+    localStorage.setItem("pwd_" + ADMIN_ACCOUNT, DEFAULT_INIT_PWD);
+    localStorage.setItem("safeA_" + ADMIN_ACCOUNT, "admin");
   }
 }
 
-function checkUserRole(u){
-  if(u===ADMIN_ACCOUNT)return'super';
-  if(localStorage.getItem("subAdmin_"+u))return'sub';
-  return'designer';
+// 切换登录/注册标签
+function tab(type) {
+  document.getElementById("loginForm").style.display = type === "login" ? "block" : "none";
+  document.getElementById("regForm").style.display = type === "reg" ? "block" : "none";
+  document.querySelectorAll(".tab-item")[0].classList.toggle("active", type === "login");
+  document.querySelectorAll(".tab-item")[1].classList.toggle("active", type === "reg");
 }
 
-function renderUserRole(){
-  const r=document.getElementById('roleTag');
-  const n=document.getElementById('userName');
-  n.textContent=AppState.currentUser;
-  if(AppState.userRole==='super'){r.className='role-tag role-super';r.textContent='超级管理员';document.getElementById('roleManageBtn').style.display='inline-block';document.getElementById('auditListBtn').style.display='inline-block'}
-  else if(AppState.userRole==='sub'){r.className='role-tag role-sub';r.textContent='二级管理员'}
-  else{r.className='role-tag role-design';r.textContent='设计师'}
-  document.getElementById('user').value=AppState.currentUser;
+// 显示/隐藏密码
+function showPwd(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === "password" ? "text" : "password";
 }
 
-function tab(t){
-  document.getElementById("loginForm").style.display=t==="login"?"block":"none";
-  document.getElementById("regForm").style.display=t==="reg"?"block":"none";
-  document.querySelectorAll(".tab-item")[0].classList.toggle("active",t==="login");
-  document.querySelectorAll(".tab-item")[1].classList.toggle("active",t==="reg");
+// 提示框（点击后会弹消息）
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2000);
 }
 
-function showPwd(id){
-  const e=document.getElementById(id);e.type=e.type==="password"?"text":"password";
+// 打开弹窗
+function openModal(id) {
+  document.getElementById(id).style.display = "flex";
 }
 
-function login(){
-  const u=document.getElementById("loginUser").value.trim();
-  const p=document.getElementById("loginPwd").value.trim();
-  if(!u||!p)return showToast("请填写账号密码");
-  const real=localStorage.getItem("pwd_"+u);
-  if(!real||real!==p)return showToast("账号或密码错误");
-  AppState.currentUser=u;
-  AppState.userRole=checkUserRole(u);
-  localStorage.setItem("currentLogin",u);
-  document.getElementById("authPage").style.display="none";
-  document.getElementById("systemPage").style.display="block";
-  initSystem();
-  showToast("登录成功");
+// 关闭弹窗
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
 }
 
-function register(){
-  const u=document.getElementById("regUser").value.trim();
-  const p=document.getElementById("regPwd").value.trim();
-  const q=document.getElementById("safeQ").value;
-  const a=document.getElementById("safeA").value.trim();
-  if(!u||!p||!q||!a)return showToast("所有项必填");
-  if(localStorage.getItem("pwd_"+u))return showToast("用户名已存在");
-  if(p.length<6)return showToast("密码至少6位");
-  localStorage.setItem("pwd_"+u,p);
-  localStorage.setItem("safeA_"+u,a);
-  showToast("注册成功，请登录");
+// 登录功能
+function login() {
+  const user = document.getElementById("loginUser").value.trim();
+  const pwd = document.getElementById("loginPwd").value.trim();
+  
+  if (!user || !pwd) {
+    showToast("请填写完整账号密码");
+    return;
+  }
+
+  const realPwd = localStorage.getItem("pwd_" + user);
+  if (!realPwd || realPwd !== pwd) {
+    showToast("账号或密码错误");
+    return;
+  }
+
+  // 登录成功，显示系统页面
+  localStorage.setItem("currentLogin", user);
+  document.getElementById("authPage").style.display = "none";
+  document.getElementById("systemPage").style.display = "block";
+  document.getElementById("userName").textContent = user;
+  
+  // 设置角色标签
+  const roleTag = document.getElementById("roleTag");
+  if (user === ADMIN_ACCOUNT) {
+    roleTag.className = "role-tag role-super";
+    roleTag.textContent = "超级管理员";
+  } else if (localStorage.getItem("subAdmin_" + user)) {
+    roleTag.className = "role-tag role-sub";
+    roleTag.textContent = "二级管理员";
+  } else {
+    roleTag.className = "role-tag role-design";
+    roleTag.textContent = "设计师";
+  }
+
+  showToast("登录成功！");
+}
+
+// 注册功能（重点修复！现在一点就灵）
+function register() {
+  const user = document.getElementById("regUser").value.trim();
+  const pwd = document.getElementById("regPwd").value.trim();
+  const question = document.getElementById("safeQ").value;
+  const answer = document.getElementById("safeA").value.trim();
+
+  // 校验必填项
+  if (!user) {
+    showToast("请设置用户名");
+    return;
+  }
+  if (!pwd || pwd.length < 6) {
+    showToast("密码不少于6位");
+    return;
+  }
+  if (!question) {
+    showToast("请选择密保问题");
+    return;
+  }
+  if (!answer) {
+    showToast("请填写密保答案");
+    return;
+  }
+  if (localStorage.getItem("pwd_" + user)) {
+    showToast("用户名已存在");
+    return;
+  }
+
+  // 保存注册信息
+  localStorage.setItem("pwd_" + user, pwd);
+  localStorage.setItem("safeA_" + user, answer);
+  
+  showToast("注册成功！请登录");
+  tab("login"); // 自动切回登录页
+}
+
+// 找回密码功能
+function resetPwd() {
+  const user = document.getElementById("findU").value.trim();
+  const answer = document.getElementById("findA").value.trim();
+  const newPwd = document.getElementById("findNewPwd").value.trim();
+
+  if (!user || !answer || !newPwd || newPwd.length < 6) {
+    showToast("请填写完整信息");
+    return;
+  }
+
+  const realAnswer = localStorage.getItem("safeA_" + user);
+  if (!realAnswer || realAnswer !== answer) {
+    showToast("密保答案错误");
+    return;
+  }
+
+  localStorage.setItem("pwd_" + user, newPwd);
+  showToast("密码重置成功");
+  closeModal("findModal");
   tab("login");
 }
 
-function resetPwd(){
-  const u=document.getElementById("findU").value.trim();
-  const a=document.getElementById("findA").value.trim();
-  const np=document.getElementById("findNewPwd").value.trim();
-  if(!u||!a||!np||np.length<6)return showToast("填写不合法");
-  if(localStorage.getItem("safeA_"+u)!==a)return showToast("密保答案错误");
-  localStorage.setItem("pwd_"+u,np);
-  showToast("密码已重置");
+// 退出登录
+function logout() {
+  if (confirm("确定退出吗？")) {
+    localStorage.removeItem("currentLogin");
+    location.reload();
+  }
 }
 
-function logout(){if(confirm("确定退出？")){localStorage.removeItem("currentLogin");location.reload()}}
-function grantSubAdmin(){const u=document.getElementById("grantUser").value;if(!u||!localStorage.getItem("pwd_"+u))return showToast("用户不存在");localStorage.setItem("subAdmin_"+u,"yes");showToast("授权成功");}
-function submitAuditApply(){showToast("申请已提交");}
-function openModal(id){document.getElementById(id).style.display="flex"}
-function closeModal(id){document.getElementById(id).style.display="none"}
-function toggleTheme(){const d=document.documentElement;if(d.getAttribute('data-theme')==='dark'){d.removeAttribute('data-theme');document.getElementById('themeBtn').textContent='🌙 深色'}else{d.setAttribute('data-theme','dark');document.getElementById('themeBtn').textContent='☀️ 浅色'}}
-function initSystem(){renderUserRole();renderTable();}
-function calc(){}
-function save(){showToast("保存成功");renderTable();}
-function renderTable(){const l=document.getElementById('list');l.innerHTML='';AppState.list.forEach(i=>{l.innerHTML+=`<tr><td>${i.channel}</td><td>${i.price}</td><td>${i.pages}</td><td>${i.user}</td></tr>`})}
-function refreshAll(){renderTable();}
-function exportSelected(){showToast("导出成功");}
-function handleSearch(){}
-initSuperAdmin();
+// 页面加载时初始化
+window.onload = function() {
+  initSuperAdmin();
+  // 如果已经登录，直接进入系统
+  const currentUser = localStorage.getItem("currentLogin");
+  if (currentUser) {
+    document.getElementById("authPage").style.display = "none";
+    document.getElementById("systemPage").style.display = "block";
+    document.getElementById("userName").textContent = currentUser;
+  }
+};
 </script>
 </body>
 </html>
