@@ -3,219 +3,282 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPT接单管理系统 | 管理员后台</title>
+<title>管理员后台｜极简版（含密保找回+退出登录）</title>
 <style>
-  /* ===== 全局重置 & 基础样式 ===== */
-  *{box-sizing:border-box;margin:0;padding:0;font-family:"Inter",system-ui,-apple-system,BlindMacOSXFont,sans-serif}
-  body{background:#f6f8fa;margin:0;padding:0;color:#24292f}
-  /* ===== 布局容器 ===== */
-  .app-container{display:flex;min-height:100vh}
-  /* ===== 侧边栏 ===== */
-  .sidebar{width:260px;background:#ffffff;border-right:1px solid #e1e4e8;padding:24px 0;display:flex;flex-direction:column}
-  .sidebar-logo{font-size:18px;font-weight:700;color:#24292f;padding:0 24px 20px;margin-bottom:20px;border-bottom:1px solid #e1e4e8}
-  .sidebar-menu{list-style:none;padding:0}
-  .sidebar-menu li{margin:4px 0}
-  .sidebar-menu a{display:flex;align-items:center;padding:10px 24px;border-radius:6px;color:#586069;text-decoration:none;font-size:14px;font-weight:500}
-  .sidebar-menu a.active{background:#0969da;color:#ffffff}
-  .sidebar-menu a:hover:not(.active){background:#f6f8fa;color:#24292f}
-  .sidebar-menu .icon{margin-right:12px;font-size:16px;width:20px;text-align:center}
-  /* ===== 主内容区 ===== */
-  .main-content{flex:1;padding:24px;display:flex;flex-direction:column}
-  /* ===== 顶部导航栏 ===== */
-  .top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #e1e4e8}
-  .nav-left{font-size:16px;font-weight:600;color:#24292f}
-  .nav-right{display:flex;gap:12px;align-items:center}
-  .user-info{display:flex;align-items:center;gap:8px;color:#24292f;font-size:14px}
-  .user-info .role{background:#e1e4e8;padding:2px 8px;border-radius:12px;font-size:12px;color:#586069}
-  .btn-nav{padding:8px 12px;border-radius:6px;border:1px solid #e1e4e8;background:#ffffff;color:#24292f;font-size:13px;cursor:pointer}
-  .btn-nav:hover{background:#f6f8fa}
-  .btn-nav.primary{background:#0969da;color:#ffffff;border-color:#0969da}
-  /* ===== 数据卡片 ===== */
-  .data-card{background:#ffffff;border:1px solid #e1e4e8;border-radius:10px;padding:24px;margin-bottom:20px}
-  .card-title{font-size:16px;font-weight:600;color:#24292f;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-  .card-title .icon{color:#0969da}
-  /* ===== 订单列表样式 ===== */
-  .order-table{width:100%;border-collapse:collapse}
-  .order-table th{text-align:left;padding:12px 16px;background:#f6f8fa;font-size:13px;font-weight:600;color:#586069;border-bottom:1px solid #e1e4e8}
-  .order-table td{padding:16px;border-bottom:1px solid #e1e4e8;font-size:14px;color:#24292f}
-  .order-table tr:hover{background:#f6f8fa}
-  .status-badge{padding:4px 8px;border-radius:12px;font-size:12px;font-weight:500}
-  .status-pending{background:#fff8e5;color:#966514}
-  .status-completed{background:#dafbe1;color:#1a7f37}
-  /* ===== 弹窗样式 ===== */
-  .modal-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:1000}
-  .modal-box{background:#fff;padding:28px;border-radius:12px;width:90%;max-width:440px;border:1px solid #e1e4e8}
-  .modal-title{font-size:18px;font-weight:600;color:#24292f;margin-bottom:20px}
-  .form-group{margin-bottom:20px}
-  .form-group label{display:block;margin-bottom:8px;font-size:14px;font-weight:500;color:#24292f}
-  .form-control{width:100%;padding:10px 12px;border:1px solid #e1e4e8;border-radius:6px;font-size:14px}
-  .form-control:focus{outline:none;border-color:#0969da;box-shadow:0 0 0 3px rgba(9,105,218,0.2)}
-  .pwd-row{position:relative}
-  .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6a737d}
-  .modal-footer{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
-  .btn{padding:10px 16px;border-radius:6px;border:1px solid transparent;font-size:14px;font-weight:500;cursor:pointer}
-  .btn-default{background:#ffffff;border-color:#e1e4e8;color:#24292f}
-  .btn-primary{background:#0969da;border-color:#0969da;color:#ffffff}
-  /* ===== 空状态 ===== */
-  .empty-state{text-align:center;padding:40px 20px;color:#586069}
-  .empty-state .icon{font-size:48px;margin-bottom:16px;color:#e1e4e8}
+/* 全局基础样式 */
+* {margin:0;padding:0;box-sizing:border-box;font-family:"微软雅黑",system-ui,-apple-system}
+body {background:#f5f7fa;color:#333}
+
+/* 登录注册容器 */
+.auth-box {max-width:420px;margin:80px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.auth-title {text-align:center;font-size:22px;color:#1989fa;margin-bottom:25px;font-weight:bold}
+.tab-wrap {display:flex;border-bottom:1px solid #eee;margin-bottom:20px}
+.tab-item {flex:1;text-align:center;padding:12px 0;color:#666;cursor:pointer}
+.tab-item.active {color:#1989fa;border-bottom:2px solid #1989fa;font-weight:500}
+.input-row {margin-bottom:16px;position:relative}
+.input-row input {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px}
+.input-row select {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px;background:#fff}
+.eye-icon {position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999}
+.btn {width:100%;padding:13px;background:#1989fa;color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;margin-top:8px}
+.btn-gray {background:#eee;color:#333}
+.tip-text {font-size:13px;color:#999;margin-top:15px;text-align:center}
+.find-pwd {color:#1989fa;cursor:pointer}
+
+/* 后台整体布局 */
+.admin-layout {display:none;min-height:100vh}
+.top-nav {background:#fff;padding:16px 24px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.user-info {font-size:15px}
+.nav-btn {padding:8px 14px;margin-left:10px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px}
+.nav-btn.exit {color:#f56c6c;border-color:#f56c6c}
+
+/* 主内容区 */
+.main-content {padding:24px}
+.card {background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.card-title {font-size:16px;font-weight:500;margin-bottom:18px;color:#333;border-left:4px solid #1989fa;padding-left:10px}
+.empty-data {text-align:center;padding:60px 0;color:#999;font-size:14px}
+
+/* 弹窗通用 */
+.modal-mask {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+.modal-box {background:#fff;padding:25px;border-radius:10px;width:90%;max-width:380px}
+.modal-title {font-size:18px;margin-bottom:20px;text-align:center;font-weight:500}
+.modal-btn {display:flex;gap:10px;margin-top:20px}
+.modal-btn button {flex:1;padding:11px;border-radius:6px;border:none;cursor:pointer}
+.btn-confirm {background:#1989fa;color:#fff}
+.btn-cancel {background:#eee;color:#333}
 </style>
 </head>
 <body>
 
-<div class="app-container">
-  <!-- 侧边栏 -->
-  <div class="sidebar">
-    <div class="sidebar-logo">📊 PPT接单管理</div>
-    <ul class="sidebar-menu">
-      <li><a href="javascript:;" class="active"><span class="icon">📋</span> 接单记录汇总</a></li>
-      <!-- 管理员隐藏新增订单入口 -->
-    </ul>
-  </div>
+<!-- 登录注册页面 -->
+<div class="auth-box" id="authPage">
+    <div class="auth-title">接单管理系统</div>
+    <div class="tab-wrap">
+        <div class="tab-item active" onclick="switchTab('login')">登录</div>
+        <div class="tab-item" onclick="switchTab('reg')">注册</div>
+    </div>
 
-  <!-- 主内容区 -->
-  <div class="main-content">
-    <!-- 顶部导航 -->
+    <!-- 登录表单 -->
+    <div id="loginForm">
+        <div class="input-row">
+            <input type="text" id="loginUser" placeholder="输入用户名">
+        </div>
+        <div class="input-row">
+            <input type="password" id="loginPwd" placeholder="输入密码">
+            <span class="eye-icon" onclick="togglePwd('loginPwd')">👁️</span>
+        </div>
+        <button class="btn" onclick="login()">立即登录</button>
+        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">点击找回</span></div>
+        <div class="tip-text">管理员默认：账号 admin / 密码 123456</div>
+    </div>
+
+    <!-- 注册表单（含密保问题） -->
+    <div id="regForm" style="display:none">
+        <div class="input-row">
+            <input type="text" id="regUser" placeholder="设置用户名">
+        </div>
+        <div class="input-row">
+            <input type="password" id="regPwd" placeholder="设置登录密码">
+            <span class="eye-icon" onclick="togglePwd('regPwd')">👁️</span>
+        </div>
+        <!-- 密保问题-方案2标配3题 -->
+        <div class="input-row">
+            <select id="safeQuestion">
+                <option value="">请选择密保问题</option>
+                <option value="母校">你的母校名称？</option>
+                <option value="宠物">第一只宠物名字？</option>
+                <option value="手机号">常用手机号后4位？</option>
+            </select>
+        </div>
+        <div class="input-row">
+            <input type="text" id="safeAnswer" placeholder="输入密保答案（自己牢记）">
+        </div>
+        <button class="btn" onclick="register()">完成注册</button>
+    </div>
+</div>
+
+<!-- 管理员后台页面（极简版-无新增订单） -->
+<div class="admin-layout" id="adminPage">
+    <!-- 顶部导航：常驻退出登录+改密码 -->
     <div class="top-nav">
-      <div class="nav-left">接单记录汇总</div>
-      <div class="nav-right">
-        <div class="user-info">
-          <span id="show_name">管理员</span>
-          <span class="role" id="show_role">管理员</span>
+        <div class="user-info">欢迎你，<span id="adminName">管理员</span>｜权限：超级管理员</div>
+        <div>
+            <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
+            <button class="nav-btn exit" onclick="logout()">退出登录</button>
         </div>
-        <button class="btn-nav" onclick="openModal('pwdModal')">🔑 修改密码</button>
-        <button class="btn-nav primary" onclick="handleLogout()">🚪 退出登录</button>
-      </div>
     </div>
 
-    <!-- 订单数据卡片 -->
-    <div class="data-card">
-      <div class="card-title"><span class="icon">📋</span> 接单记录台账</div>
-      <div id="order_list" class="order-table">
-        <div class="empty-state">
-          <div class="icon">📭</div>
-          <div>暂无订单数据，开始记录吧</div>
+    <!-- 核心内容：仅保留订单台账 -->
+    <div class="main-content">
+        <div class="card">
+            <div class="card-title">接单记录台账（全量数据）</div>
+            <div class="empty-data">暂无订单数据，后续对接云端自动加载</div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
+
+<!-- 找回密码弹窗（密保验证） -->
+<div class="modal-mask" id="findModal">
+    <div class="modal-box">
+        <div class="modal-title">密保找回密码</div>
+        <div class="input-row">
+            <input type="text" id="findUser" placeholder="输入注册用户名">
+        </div>
+        <div class="input-row">
+            <input type="text" id="findAnswer" placeholder="输入密保答案">
+        </div>
+        <div class="input-row">
+            <input type="password" id="newFindPwd" placeholder="设置新密码">
+        </div>
+        <div class="modal-btn">
+            <button class="btn-cancel" onclick="closeModal('findModal')">取消</button>
+            <button class="btn-confirm" onclick="resetPwd()">确认重置</button>
+        </div>
+    </div>
 </div>
 
 <!-- 修改密码弹窗 -->
-<div class="modal-mask" id="pwdModal">
-  <div class="modal-box">
-    <div class="modal-title">修改账号密码</div>
-    
-    <div class="form-group">
-      <label for="old_pwd">原密码</label>
-      <div class="pwd-row">
-        <input id="old_pwd" type="password" class="form-control" placeholder="请输入原登录密码">
-        <span class="eye" onclick="eye('old_pwd')">👁️</span>
-      </div>
+<div class="modal-mask" id="editPwdModal">
+    <div class="modal-box">
+        <div class="modal-title">修改账号密码</div>
+        <div class="input-row">
+            <input type="password" id="oldEditPwd" placeholder="输入原密码">
+        </div>
+        <div class="input-row">
+            <input type="password" id="newEditPwd" placeholder="输入新密码">
+        </div>
+        <div class="modal-btn">
+            <button class="btn-cancel" onclick="closeModal('editPwdModal')">取消</button>
+            <button class="btn-confirm" onclick="saveEditPwd()">确认修改</button>
+        </div>
     </div>
-
-    <div class="form-group">
-      <label for="new_pwd">新密码</label>
-      <div class="pwd-row">
-        <input id="new_pwd" type="password" class="form-control" placeholder="设置新密码（不少于6位）">
-        <span class="eye" onclick="eye('new_pwd')">👁️</span>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="confirm_pwd">确认新密码</label>
-      <div class="pwd-row">
-        <input id="confirm_pwd" type="password" class="form-control" placeholder="再次输入新密码">
-        <span class="eye" onclick="eye('confirm_pwd')">👁️</span>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-default" onclick="closeModal('pwdModal')">取消</button>
-      <button class="btn btn-primary" onclick="updatePwd()">确认修改</button>
-    </div>
-  </div>
 </div>
 
 <script>
-// ======================= 【你自己填写这2个！】 =======================
-const SUPABASE_URL = "【在这里填 你的 Project URL】";
-const SUPABASE_KEY = "【在这里填 你的 anon public API Key】";
-// ====================================================================
+// 云端配置占位（保留你之前的密钥填写位）
+const SUPPLY_URL = "";
+const SUPPLY_KEY = "";
 
-// 眼睛显隐密码
-function eye(id) {
-  let i = document.getElementById(id);
-  i.type = i.type === "password" ? "text" : "password";
+// 切换登录/注册标签
+function switchTab(type){
+    document.querySelectorAll('.tab-item').forEach((item,index)=>{
+        item.classList.toggle('active',(type==='login'&&index===0)||(type==='reg'&&index===1))
+    })
+    document.getElementById('loginForm').style.display = type==='login'?'block':'none'
+    document.getElementById('regForm').style.display = type==='reg'?'block':'none'
+}
+
+// 密码显隐切换
+function togglePwd(id){
+    let input = document.getElementById(id)
+    input.type = input.type==='password'?'text':'password'
 }
 
 // 弹窗控制
-function openModal(id) {
-  document.getElementById(id).style.display = "flex";
-}
-function closeModal(id) {
-  document.getElementById(id).style.display = "none";
-}
+function openModal(id){document.getElementById(id).style.display='flex'}
+function closeModal(id){document.getElementById(id).style.display='none'}
 
-// 退出登录
-function handleLogout() {
-  if(confirm("确定要退出登录吗？")) {
-    localStorage.clear();
-    window.location.reload();
-  }
+// 退出登录（硬性常驻功能）
+function logout(){
+    if(confirm('确定要退出当前账号吗？')){
+        localStorage.clear()
+        location.reload()
+    }
 }
 
-// 初始化（模拟管理员身份，实际对接云端后替换）
-function initAdmin() {
-  document.getElementById("authPage")?.remove(); // 移除登录页（如果存在）
-  document.querySelector(".app-container").style.display = "flex";
-  
-  let name = localStorage.getItem("username") || "管理员";
-  document.getElementById("show_name").innerText = name;
-  document.getElementById("show_role").innerText = "管理员";
-  
-  loadOrders();
+// 登录逻辑
+function login(){
+    let user = document.getElementById('loginUser').value.trim()
+    let pwd = document.getElementById('loginPwd').value.trim()
+    if(!user||!pwd) return alert('请填写完整账号密码')
+
+    // 管理员默认账号
+    if(user==='admin'&&pwd==='123456'){
+        localStorage.setItem('role','admin')
+        localStorage.setItem('username','admin')
+        showAdminPage()
+        return
+    }
+
+    // 普通账号验证
+    let savePwd = localStorage.getItem('pwd_'+user)
+    if(savePwd&&savePwd===pwd){
+        localStorage.setItem('role','user')
+        localStorage.setItem('username',user)
+        alert('登录成功')
+        showAdminPage()
+        return
+    }
+    alert('账号或密码错误')
 }
 
-// 保存订单（模拟，后续对接云端）
-function saveOrder() {
-  alert("功能已预留，后续对接云端数据库");
+// 注册逻辑（保存密保问题+答案）
+function register(){
+    let user = document.getElementById('regUser').value.trim()
+    let pwd = document.getElementById('regPwd').value.trim()
+    let question = document.getElementById('safeQuestion').value
+    let answer = document.getElementById('safeAnswer').value.trim()
+
+    if(!user||!pwd||!question||!answer) return alert('用户名、密码、密保问题及答案必填')
+    if(localStorage.getItem('pwd_'+user)) return alert('用户名已存在')
+
+    // 保存账号密码+密保信息
+    localStorage.setItem('pwd_'+user,pwd)
+    localStorage.setItem('safeQ_'+user,question)
+    localStorage.setItem('safeA_'+user,answer)
+    alert('注册成功！请前往登录')
+    switchTab('login')
 }
 
-// 加载订单（模拟，实际对接云端）
-function loadOrders() {
-  const listEl = document.getElementById("order_list");
-  // 这里后续替换为从 Supabase 读取所有订单的逻辑
-  listEl.innerHTML = `
-    <div class="empty-state">
-      <div class="icon">📭</div>
-      <div>云端连接成功，正在加载订单数据...</div>
-    </div>
-  `;
+// 密保重置密码
+function resetPwd(){
+    let user = document.getElementById('findUser').value.trim()
+    let answer = document.getElementById('findAnswer').value.trim()
+    let newPwd = document.getElementById('newFindPwd').value.trim()
+
+    if(!user||!answer||!newPwd) return alert('请填写完整信息')
+    let saveAnswer = localStorage.getItem('safeA_'+user)
+    
+    if(!saveAnswer) return alert('该用户名未注册')
+    if(saveAnswer!==answer) return alert('密保答案错误，无法重置')
+
+    localStorage.setItem('pwd_'+user,newPwd)
+    alert('密码重置成功！请用新密码登录')
+    closeModal('findModal')
 }
 
-// 修改密码（模拟，实际对接云端）
-function updatePwd() {
-  let oldPwd = document.getElementById("old_pwd").value.trim();
-  let newPwd = document.getElementById("new_pwd").value.trim();
-  let confirmPwd = document.getElementById("confirm_pwd").value.trim();
-  
-  let realOldPwd = "123456"; // 模拟原密码，实际从云端读取
-  
-  if(oldPwd !== realOldPwd) return alert("原密码输入错误！");
-  if(newPwd.length < 6) return alert("新密码长度不能少于6位");
-  if(newPwd !== confirmPwd) return alert("两次输入的新密码不一致！");
+// 修改密码
+function saveEditPwd(){
+    let oldPwd = document.getElementById('oldEditPwd').value.trim()
+    let newPwd = document.getElementById('newEditPwd').value.trim()
+    let username = localStorage.getItem('username')
 
-  alert("密码修改成功！请重新登录以生效");
-  closeModal('pwdModal');
-  handleLogout();
+    let realOld = username==='admin'?'123456':localStorage.getItem('pwd_'+username)
+    if(oldPwd!==realOld) return alert('原密码错误')
+    if(newPwd.length<6) return alert('新密码至少6位')
+
+    if(username==='admin'){
+        alert('管理员密码需后台手动修改')
+    }else{
+        localStorage.setItem('pwd_'+username,newPwd)
+        alert('密码修改成功，请重新登录')
+        closeModal('editPwdModal')
+        logout()
+    }
 }
 
-// 页面加载自动初始化
-window.onload = function() {
-  // 如果是管理员直接进入后台
-  initAdmin();
-};
+// 展示管理员极简后台
+function showAdminPage(){
+    document.getElementById('authPage').style.display='none'
+    document.getElementById('adminPage').style.display='block'
+    document.getElementById('adminName').innerText = localStorage.getItem('username')||'管理员'
+}
+
+// 自动校验登录状态
+window.onload = function(){
+    if(localStorage.getItem('username')&&localStorage.getItem('role')){
+        showAdminPage()
+    }
+}
 </script>
 </body>
 </html>
