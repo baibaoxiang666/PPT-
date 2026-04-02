@@ -1,154 +1,64 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPT接单结算系统 V2.0</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
-        }
-        body {
-            background: #f5f7fa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .login-box {
-            background: white;
-            padding: 45px;
-            border-radius: 16px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.07);
-            width: 100%;
-            max-width: 450px;
-        }
-        h1 {
-            text-align: center;
-            color: #409eff;
-            margin-bottom: 35px;
-            font-size: 26px;
-        }
-        .input-item {
-            margin-bottom: 25px;
-        }
-        .input-item label {
-            display: block;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 15px;
-        }
-        .input-item input {
-            width: 100%;
-            padding: 14px 18px;
-            border: 1px solid #e5e6eb;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .input-item input:focus {
-            outline: none;
-            border-color: #409eff;
-        }
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: #409eff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 17px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background: #338eef;
-        }
-        .tip {
-            text-align: center;
-            margin-top: 25px;
-            color: #999;
-            font-size: 14px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PPT接单系统 可跳转版</title>
+<style>
+body{background:#f5f7fa;font-family:微软雅黑;padding:20px;}
+.login-box{max-width:420px;margin:80px auto;background:#fff;padding:40px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1);}
+h2{text-align:center;color:#409eff;margin-bottom:30px;}
+.item{margin-bottom:20px;}
+.item input{width:100%;padding:12px;border:1px #ddd solid;border-radius:6px;font-size:16px;}
+.btn{width:100%;padding:13px;background:#409eff;color:#fff;border:none;border-radius:6px;font-size:16px;cursor:pointer;}
+.tip{margin-top:20px;text-align:center;color:#999;font-size:14px;}
+</style>
 </head>
 <body>
-    <div class="login-box">
-        <h1>PPT接单结算系统</h1>
-        <div class="input-item">
-            <label>用户名</label>
-            <input type="text" id="username" placeholder="请输入用户名">
-        </div>
-        <div class="input-item">
-            <label>密码</label>
-            <input type="password" id="pwd" placeholder="请输入密码">
-        </div>
-        <button class="btn" onclick="login()">登录</button>
-        <div class="tip">
-            管理员：admin / 123456<br>
-            设计师：designer1 / 123456
-        </div>
+
+<div class="login-box" id="loginWrap">
+  <h2>系统登录</h2>
+  <div class="item"><input id="u" placeholder="用户名"></div>
+  <div class="item"><input id="p" placeholder="密码" type="password"></div>
+  <button class="btn" onclick="doLogin()">立即登录</button>
+  <div class="tip">admin / 123456<br>designer1 / 123456</div>
+</div>
+
+<script>
+const acc = [
+  {user:'admin',pwd:'123456',role:'管理员'},
+  {user:'designer1',pwd:'123456',role:'设计师'}
+];
+
+function doLogin(){
+  let u = document.getElementById('u').value.trim();
+  let p = document.getElementById('p').value.trim();
+  let find = acc.find(x=>x.user===u&&x.pwd===p);
+
+  if(!find){
+    alert('账号密码错误！');
+    return;
+  }
+
+  alert('登录成功，正在进入后台...');
+  document.body.innerHTML = `
+  <div style="max-width:800px;margin:30px auto;background:#fff;padding:30px;border-radius:12px;">
+    <h2>欢迎 ${u}（${find.role}）</h2>
+    <div style="margin-top:30px;">
+      <div style="margin:15px 0;">
+        <label>客户名称</label>
+        <input style="width:100%;padding:10px;margin-top:8px;border:1px #ddd solid;border-radius:6px;">
+      </div>
+      <div style="margin:15px 0;">
+        <label>订单备注</label>
+        <textarea rows="4" style="width:100%;padding:10px;border:1px #ddd solid;border-radius:6px;"></textarea>
+      </div>
+      <button style="background:#409eff;color:#fff;border:none;padding:12px 24px;border-radius:6px;">提交订单</button>
     </div>
+  </div>
+  `;
+}
+</script>
 
-    <script>
-        // 初始化内置账号（永久有效）
-        let users = JSON.parse(localStorage.getItem('ppt_users')) || [
-            { username: "admin", pwd: "123456", role: "admin" },
-            { username: "designer1", pwd: "123456", role: "designer" }
-        ];
-        localStorage.setItem('ppt_users', JSON.stringify(users));
-
-        // 登录逻辑
-        function login() {
-            let user = document.getElementById("username").value.trim();
-            let password = document.getElementById("pwd").value.trim();
-
-            if (!user || !password) {
-                alert("请输入账号密码！");
-                return;
-            }
-
-            let find = users.find(item => item.username === user && item.pwd === password);
-            if (!find) {
-                alert("账号或密码错误！");
-                return;
-            }
-
-            // 登录成功 → 跳转到后台页面
-            alert("登录成功！正在进入系统...");
-            showDashboard(find.role, find.username);
-        }
-
-        // 显示后台页面
-        function showDashboard(role, name) {
-            document.body.innerHTML = `
-            <style>
-                body{background:#f5f7fa;padding:30px;}
-                .header{background:white;padding:25px;border-radius:12px;margin-bottom:20px;}
-                .card{background:white;padding:25px;border-radius:12px;margin-bottom:15px;}
-                h2{color:#409eff;}
-                .label{font-size:14px;color:#666;margin-bottom:8px;}
-                input,textarea{width:100%;padding:12px;border:1px solid #eee;border-radius:6px;margin-bottom:15px;}
-                .submit{background:#409eff;color:white;padding:12px;border:none;border-radius:6px;cursor:pointer;}
-            </style>
-            <div class="header">
-                <h2>欢迎你：${name}（${role === 'admin' ? '管理员' : '设计师'}）</h2>
-                <p style="margin-top:10px;color:#999">当前身份：${role === 'admin' ? '可查看所有订单' : '仅可提交个人订单'}</p>
-            </div>
-            <div class="card">
-                <div class="label">客户姓名</div>
-                <input type="text" placeholder="请输入客户姓名">
-                <div class="label">订单内容</div>
-                <textarea rows="3" placeholder="填写PPT要求"></textarea>
-                <div class="label">金额</div>
-                <input type="text" placeholder="填写订单金额">
-                <button class="submit">提交订单</button>
-            </div>
-            `;
-        }
-    </script>
 </body>
 </html>
