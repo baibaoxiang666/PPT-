@@ -1,1399 +1,224 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPT接单结算系统·V2.0（在线版）</title>
-<!-- 新增：引入Supabase云端连接工具 -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<style>
-:root{
-  --blue:#277ef0;--green:#00b42a;--orange:#ff7d00;--red:#f53f3f;
-  --bg:#f7f9fc;--card:#fff;--border:#e5e6eb;--gray:#666;--light:#f2f3f5;
-  --text:#2b2b2b;--shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-[data-theme="dark"]{
-  --bg:#1a1a2e;--card:#16213e;--border:#0f3460;
-  --text:#eaeaea;--gray:#a0a0a0;--light:#1f2937;
-  --shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",-apple-system,sans-serif}
-body{background:var(--bg);padding:25px;max-width:1600px;margin:0 auto;color:var(--text);transition:background 0.3s}
-/* 登录页样式 */
-.login-container{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:var(--bg);display:flex;align-items:center;justify-content:center;
-  z-index:9999;
-}
-.login-card{
-  background:var(--card);border-radius:16px;padding:40px;
-  width:420px;max-width:90%;box-shadow:var(--shadow);
-  text-align:center;
-}
-.login-title{
-  font-size:24px;font-weight:600;margin-bottom:30px;color:var(--blue);
-}
-.login-form{
-  display:flex;flex-direction:column;gap:20px;
-}
-.login-form .item{
-  display:flex;flex-direction:column;gap:8px;
-  text-align:left;
-}
-.login-form label{
-  font-size:14px;color:var(--gray);font-weight:500;
-}
-.login-form input{
-  width:100%;border:1px solid var(--border);border-radius:8px;
-  padding:12px 16px;outline:none;font-size:14px;
-  background:var(--card);color:var(--text);
-  transition:all 0.2s;
-}
-.login-form input:focus{
-  border-color:var(--blue);box-shadow:0 0 0 3px rgba(39,126,240,0.1);
-}
-.login-btns{
-  display:flex;gap:12px;margin-top:10px;
-}
-.login-btn{
-  flex:1;padding:12px 0;border-radius:8px;
-  font-size:16px;font-weight:500;cursor:pointer;
-  transition:all 0.2s;border:none;
-}
-.login-btn.primary{
-  background:var(--blue);color:#fff;
-}
-.login-btn.default{
-  background:var(--light);color:var(--text);
-}
-.login-btn:hover{
-  transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.1);
-}
-.login-footer{
-  margin-top:20px;font-size:13px;color:var(--gray);
-}
-.login-footer span{
-  color:var(--blue);cursor:pointer;text-decoration:underline;
-}
-/* 顶部工具栏（新增用户信息） */
-.top-toolbar{
-  position:sticky;top:0;background:var(--card);border-radius:12px;padding:16px 24px;
-  margin-bottom:20px;box-shadow:var(--shadow);z-index:100;
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
-}
-.toolbar-left,.toolbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.user-info{
-  display:flex;align-items:center;gap:8px;padding:8px 16px;
-  background:var(--light);border-radius:8px;
-  font-size:14px;
-}
-.user-role{
-  padding:2px 8px;border-radius:12px;font-size:12px;
-  background:var(--blue);color:#fff;
-}
-.admin-tag{
-  background:var(--red);color:#fff;
-}
-/* 管理员专属功能区 */
-.admin-tools{
-  background:linear-gradient(135deg, rgba(245,63,63,0.05), rgba(245,63,63,0.1));
-  border-radius:12px;padding:16px;margin-bottom:20px;
-  border:1px solid rgba(245,63,63,0.15);
-}
-.admin-title{
-  font-size:15px;font-weight:600;margin-bottom:12px;color:var(--red);
-  display:flex;align-items:center;gap:8px;
-}
-.admin-title::before{
-  content:"🔑";font-size:16px;
-}
-.admin-actions{
-  display:flex;gap:10px;flex-wrap:wrap;
-}
-/* 原有样式保留（从 v1.0 完整复制） */
-.card{background:var(--card);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);transition:all 0.3s}
-.title{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:14px}
-.item{display:flex;flex-direction:column;gap:6px;min-width:140px;flex:1}
-label{font-size:13px;color:var(--gray);font-weight:500}
-input,textarea,select{
-  width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;
-  outline:none;font-size:14px;background:var(--card);color:var(--text);
-  transition:all 0.2s
-}
-input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(39,126,240,0.1)}
-input[readonly]{background:var(--light);opacity:0.8}
-#pasteArea{height:100px;resize:none;font-family:monospace}
-button{cursor:pointer;border:none;border-radius:8px;padding:10px 18px;font-size:14px;transition:all 0.2s}
-button:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
-button:active{transform:translateY(0)}
-.btn-primary{background:var(--blue);color:#fff}
-.btn-success{background:var(--green);color:#fff}
-.btn-warning{background:var(--orange);color:#fff}
-.btn-danger{background:var(--red);color:#fff}
-.btn-default{background:var(--light);color:var(--text);border:1px solid var(--border)}
-.btn-icon{padding:8px;font-size:16px}
-.p25{background:#3b8aff;color:#fff}
-.p50{background:#ff9500;color:#fff}
-.p75{background:#b969d7;color:#fff}
-.p100{background:#00c853;color:#fff}
-.progress-box{width:100%;height:8px;background:var(--light);border-radius:4px;overflow:hidden;margin:8px 0}
-.progress-bar{height:100%;transition:all .3s ease-out}
-.search-bar{
-  position:relative;margin-bottom:16px
-}
-.search-bar input{padding-left:40px}
-.search-icon{
-  position:absolute;left:14px;top:50%;transform:translateY(-50%);
-  color:var(--gray);font-size:16px
-}
-.filter-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.filter-tag{
-  padding:6px 12px;background:var(--light);border-radius:16px;
-  font-size:12px;cursor:pointer;transition:all 0.2s;border:1px solid transparent
-}
-.filter-tag.active{background:var(--blue);color:#fff}
-.filter-tag:hover{border-color:var(--blue)}
-.table-container{max-height:500px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse}
-th,td{border-bottom:1px solid var(--border);padding:12px;text-align:center;position:relative}
-th{background:var(--light);position:sticky;top:0;font-weight:600;z-index:10}
-tr:hover{background:var(--light)}
-.status-badge{
-  display:inline-block;padding:4px 12px;border-radius:16px;
-  font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s
-}
-.status-pending{background:#fff2f0;color:var(--red)}
-.status-abnormal{background:#fff7e6;color:var(--orange)}
-.status-completed{background:#f6ffed;color:var(--green)}
-.action-btn{
-  padding:6px 12px;font-size:12px;border-radius:6px;
-  margin:0 4px;cursor:pointer;transition:all 0.2s
-}
-.pagination{
-  display:flex;justify-content:center;align-items:center;gap:12px;
-  margin-top:16px;padding:16px
-}
-.page-info{color:var(--gray);font-size:13px}
-.page-btns{display:flex;gap:8px}
-.page-btn{
-  padding:6px 12px;border-radius:6px;background:var(--light);
-  cursor:pointer;transition:all 0.2s;border:1px solid var(--border)
-}
-.page-btn:hover{border-color:var(--blue)}
-.page-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.page-btn:disabled{opacity:0.4;cursor:not-allowed}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin:16px 0}
-.stat-card{
-  background:linear-gradient(135deg,var(--light) 0%,var(--card) 100%);
-  padding:16px;border-radius:10px;text-align:center;
-  transition:all 0.3s;cursor:pointer;border:1px solid transparent
-}
-.stat-card:hover{border-color:var(--blue);transform:translateY(-2px)}
-.stat-card h4{font-size:13px;color:var(--gray);margin-bottom:8px}
-.stat-card .num{font-size:24px;font-weight:bold;color:var(--blue);font-family:'Courier New',monospace}
-.stat-card .trend{font-size:11px;margin-top:4px}
-.chart-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:24px;margin-top:24px}
-.chart-item{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--border)}
-.chart-item label{display:block;margin-bottom:12px;font-weight:600;color:var(--gray);font-size:14px}
-.chart-container{position:relative;height:220px;width:100%}
-.modal{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.4);display:none;align-items:center;
-  justify-content:center;z-index:1000;backdrop-filter:blur(4px)
-}
-.modal-content{
-  background:var(--card);padding:28px;border-radius:12px;
-  width:520px;max-width:90%;max-height:85vh;
-  overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.2);
-  animation:modalIn 0.3s ease-out
-}
-@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
-.tip-toast{
-  position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);
-  background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:24px;
-  display:none;z-index:2000;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);
-  transition:transform 0.3s ease-out
-}
-.tip-toast.show{transform:translateX(-50%) translateY(0)}
-.shortcut-hint{
-  position:fixed;top:10px;right:10px;background:var(--card);
-  padding:12px 16px;border-radius:8px;font-size:12px;
-  box-shadow:var(--shadow);opacity:0;transition:opacity 0.3s;
-  z-index:999
-}
-.shortcut-hint.show{opacity:1}
-.empty-state{
-  text-align:center;padding:60px 20px;color:var(--gray);
-  background:var(--light);border-radius:12px;margin:16px 0
-}
-.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.5}
-.loading{opacity:0.5;pointer-events:none;position:relative}
-.loading::after{
-  content:'';position:absolute;top:50%;left:50%;
-  width:40px;height:40px;margin:-20px 0 0 -20px;
-  border:3px solid var(--border);border-top-color:var(--blue);
-  border-radius:50%;animation:spin 0.8s linear infinite
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:768px){
-  body{padding:15px}
-  .top-toolbar{flex-direction:column;align-items:stretch}
-  .toolbar-left,.toolbar-right{justify-content:center}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .row{flex-direction:column}
-  .chart-box{grid-template-columns:1fr}
-  table{font-size:12px}
-  th,td{padding:8px 6px}
-  .admin-actions{flex-direction:column}
-  .admin-actions button{width:100%}
-}
-@media(prefers-reduced-motion:reduce){
-  *{transition:none !important;animation:none !important}
-}
-@media print{
-  .top-toolbar,.modal,.tip-toast,.shortcut-hint{display:none !important}
-  body{padding:0;max-width:none}
-  .card{box-shadow:none;border:1px solid #ddd}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT制作管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .tab-group {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border: none;
+            background: none;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #409eff;
+            border-bottom: 2px solid #409eff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #409eff;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background-color: #409eff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #338eef;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .tips {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
-<!-- 登录页面（默认显示，登录后隐藏） -->
-<div class="login-container" id="loginContainer">
-  <div class="login-card">
-    <div class="login-title">PPT接单结算系统 V2.0</div>
-    <div class="login-form">
-      <div class="item">
-        <label>用户名</label>
-        <input type="text" id="loginUsername" placeholder="输入用户名（测试用：admin/designer1）" value="admin">
-      </div>
-      <div class="item">
-        <label>密码</label>
-        <input type="password" id="loginPassword" placeholder="输入密码（测试用：123456）" value="123456">
-      </div>
-      <div class="login-btns">
-        <button class="login-btn primary" onclick="handleLogin()" type="button">登录</button>
-        <button class="login-btn default" onclick="showRegister()" type="button">注册</button>
-      </div>
-      <div class="login-footer">
-        测试账号：<span onclick="fillTestAdmin()">管理员(admin)</span> / <span onclick="fillTestDesigner()">设计师(designer1)</span>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 注册弹窗 -->
-<div class="modal" id="registerModal" onclick="closeRegisterModal(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="title">用户注册（在线版）</div>
-    <div class="login-form">
-      <div class="item">
-        <label>用户名（必填）</label>
-        <input type="text" id="regUsername" placeholder="设置用户名">
-      </div>
-      <div class="item">
-        <label>密码（必填，至少6位）</label>
-        <input type="password" id="regPassword" placeholder="设置密码">
-      </div>
-      <div class="item">
-        <label>确认密码</label>
-        <input type="password" id="regPasswordConfirm" placeholder="再次输入密码">
-      </div>
-      <div class="item">
-        <label>用户类型</label>
-        <select id="regRole">
-          <option value="designer">普通设计师</option>
-          <option value="admin" disabled>管理员（仅系统默认）</option>
-        </select>
-      </div>
-      <div class="login-btns">
-        <button class="login-btn primary" onclick="handleRegister()" type="button">注册</button>
-        <button class="login-btn default" onclick="closeRegisterModal()" type="button">取消</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 用户管理弹窗（管理员专属） -->
-<div class="modal" id="userManageModal" onclick="closeUserManageModal(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="title">🔑 用户管理（管理员专属）</div>
-    <div id="userList" style="max-height:400px;overflow-y:auto"></div>
-    <button class="btn-default" onclick="closeUserManageModal()" style="margin-top:16px;width:100%">关闭</button>
-  </div>
-</div>
-<!-- 管理员专属功能区（登录后根据权限显示） -->
-<div class="admin-tools" id="adminTools" style="display:none">
-  <div class="admin-title">管理员专属功能</div>
-  <div class="admin-actions">
-    <button class="btn-danger" onclick="openUserManage()">用户管理</button>
-    <button class="btn-primary" onclick="exportAllUsersData()">导出所有用户数据</button>
-    <button class="btn-default" onclick="resetAllTestData()">重置测试数据</button>
-    <button class="btn-warning" onclick="assignOrdersToUser()">分配订单给用户</button>
-  </div>
-</div>
-<!-- 顶部工具栏（登录后显示） -->
-<div class="top-toolbar" id="mainToolbar" style="display:none">
-  <div class="toolbar-left">
-    <button class="btn-primary" onclick="refreshAll()">📊 刷新统计</button>
-    <button class="btn-success" onclick="exportSelected()">📥 导出选中</button>
-    <button class="btn-default" onclick="exportAllBackup()">💾 备份</button>
-    <button class="btn-default" onclick="importBackup()">📤 恢复</button>
-    <button class="btn-default" onclick="showShortcuts()">⌨️ 快捷键</button>
-  </div>
-  <div class="toolbar-right">
-    <div class="user-info" id="userInfoDisplay">
-      <span id="currentUserName">用户名</span>
-      <span class="user-role" id="currentUserRole">设计师</span>
-      <button class="btn-default" onclick="handleLogout()" style="padding:4px 8px;font-size:12px">退出</button>
-    </div>
-    <button class="btn-default" onclick="toggleTheme()" title="切换主题（Ctrl+D）" id="themeBtn">🌙 深色</button>
-    <button class="btn-primary" onclick="openChannelModal()">🏪 渠道管理</button>
-    <button class="btn-success" onclick="batchSet('已结算')">✅ 已结算</button>
-    <button class="btn-warning" onclick="batchSet('异常')">⚠️ 异常</button>
-    <button class="btn-danger" onclick="batchSet('待结算')">⏳ 待结算</button>
-  </div>
-</div>
-<!-- 数据看板（登录后显示） -->
-<div class="card" id="dataBoard" style="display:none">
-  <div class="title">
-    <span>📈 数据看板</span>
-    <div>
-      <button class="btn-default" onclick="setCountMode(0)" id="countMode0">⏱️ 激进</button>
-      <button class="btn-default" onclick="setCountMode(1)" id="countMode1">📅 温和</button>
-      <button class="btn-default" onclick="setCountMode(2)" id="countMode2">🔕 静默</button>
-    </div>
-  </div>
-  <div class="stats-grid">
-    <div class="stat-card" onclick="filterByStatus('all')">
-      <h4>📦 总订单</h4>
-      <div class="num" id="totalOrder">0</div>
-      <div class="trend" id="orderTrend">-</div>
-    </div>
-    <div class="stat-card" onclick="filterByStatus('all')">
-      <h4>💰 总金额</h4>
-      <div class="num" id="totalMoney">¥0.00</div>
-      <div class="trend" id="moneyTrend">-</div>
-    </div>
-    <div class="stat-card" onclick="filterByStatus('all')">
-      <h4>💵 总收益</h4>
-      <div class="num" id="totalFinal">¥0.00</div>
-      <div class="trend" id="finalTrend">-</div>
-    </div>
-    <div class="stat-card">
-      <h4>⏰ 平均耗时</h4>
-      <div class="num" id="avgTime">0h</div>
-    </div>
-    <div class="stat-card">
-      <h4>💼 时薪</h4>
-      <div class="num" id="avgHour">¥0.00</div>
-    </div>
-    <div class="stat-card" onclick="filterByStatus('pending')">
-      <h4>⏳ 未完成</h4>
-      <div class="num" id="undone">0</div>
-    </div>
-  </div>
-  
-  <div class="chart-box">
-    <div class="chart-item">
-      <label>📊 订单趋势</label>
-      <div class="chart-container"><canvas id="chartCount"></canvas></div>
-    </div>
-    <div class="chart-item">
-      <label>💵 收入趋势</label>
-      <div class="chart-container"><canvas id="chartMoney"></canvas></div>
-    </div>
-  </div>
-  
-  <div id="aiTips" style="padding:12px;text-align:center;color:var(--gray);font-size:13px"></div>
-</div>
-<!-- 订单录入（登录后显示） -->
-<div class="card" id="orderInputCard" style="display:none">
-  <div class="title">
-    <span>📝 订单录入（智能识别）</span>
-    <span style="font-size:12px;color:var(--gray)">支持格式：24页/24P | 600元/¥600</span>
-  </div>
-  <textarea id="pasteArea" placeholder="粘贴订单信息，自动识别页数、价格、渠道&#10;示例1：24页 精美美化静态 明天晚上要 原价600&#10;示例2：32P PPT设计 闲鱼下单 800元 团队3人"></textarea>
-  
-  <div class="row">
-    <div class="item" style="flex:2"><label>快捷渠道</label><div id="channelBtns" class="filter-tags"></div></div>
-  </div>
-  
-  <div class="row">
-    <div class="item"><label>渠道 *</label><input id="channel" placeholder="选择或输入" required></div>
-    <div class="item"><label>群ID</label><input id="group" placeholder="客户群编号"></div>
-    <div class="item"><label>原价（元）*</label><input id="price" type="number" min="0" placeholder="自动识别" required></div>
-    <div class="item"><label>页数 *</label><input id="page" type="number" min="1" placeholder="自动识别" required></div>
-  </div>
-  <div class="row">
-    <div class="item"><label>接单人</label><input id="user" placeholder="您的名字" readonly></div>
-    <div class="item"><label>成员（逗号分隔）</label><input id="member" placeholder="团队协作成员"></div>
-    <div class="item"><label>备注</label><input id="remark" placeholder="特殊要求或备注"></div>
-  </div>
-  <div class="row">
-    <div class="item"><label>接单时间</label><input type="datetime-local" id="timeOrder"></div>
-    <div class="item"><label>期望交付</label><input type="datetime-local" id="timeHope"></div>
-    <div class="item"><label>实际交付</label><input type="datetime-local" id="timeReal"></div>
-  </div>
-  <div class="row">
-    <div class="item" style="flex:1">
-      <label>进度</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-        <button class="p25" onclick="setProgress(25)">25%</button>
-        <button class="p50" onclick="setProgress(50)">50%</button>
-        <button class="p75" onclick="setProgress(75)">75%</button>
-        <button class="p100" onclick="setProgress(100)">100%</button>
-        <button class="btn-success" onclick="fillRealTime()">✅ 完成</button>
-      </div>
-      <div class="progress-box"><div class="progress-bar" id="pro"></div></div>
-    </div>
-  </div>
-  <div class="row">
-    <button class="btn-success" onclick="calc()">🧮 计算收益</button>
-    <button class="btn-primary" onclick="save()" id="saveBtn">💾 保存订单 (Ctrl+S)</button>
-    <button class="btn-default" onclick="clearForm()">🗑️ 清空</button>
-    <button class="btn-default" onclick="saveDraft()">📋 暂存草稿</button>
-  </div>
-</div>
-<!-- 结算预览（登录后显示） -->
-<div class="card" id="settlementCard" style="display:none">
-  <div class="title">💰 结算预览</div>
-  <div class="row">
-    <div class="item"><label>分成比例</label><input id="rate" readonly></div>
-    <div class="item"><label>单页到手（元）</label><input id="pagePrice" readonly></div>
-    <div class="item"><label>总收益（元）</label><input id="totalPrice" readonly></div>
-  </div>
-</div>
-<!-- 订单列表（登录后显示） -->
-<div class="card" id="orderListCard" style="display:none">
-  <div class="title">
-    <span>📋 订单列表</span>
-    <div style="display:flex;gap:8px">
-      <button class="btn-default btn-icon" onclick="reverseCheck()" title="反选">🔃</button>
-      <button class="btn-default btn-icon" onclick="clearCheck()" title="清空选择">❌</button>
-    </div>
-  </div>
-  
-  <div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="搜索渠道、备注、接单人..." oninput="handleSearch()">
-  </div>
-  
-  <div class="filter-tags">
-    <div class="filter-tag active" onclick="switchTab(this,'all')">全部</div>
-    <div class="filter-tag" onclick="switchTab(this,'leader')">领队单</div>
-    <div class="filter-tag" onclick="switchTab(this,'team')">团队单</div>
-    <div class="filter-tag" onclick="switchTab(this,'pro25')">25%</div>
-    <div class="filter-tag" onclick="switchTab(this,'pro50')">50%</div>
-    <div class="filter-tag" onclick="switchTab(this,'pro75')">75%</div>
-    <div class="filter-tag" onclick="switchTab(this,'pro100')">100%</div>
-    <div class="filter-tag" onclick="switchTab(this,'pending')">待结算</div>
-    <div class="filter-tag" onclick="switchTab(this,'abnormal')">异常</div>
-    <div class="filter-tag" onclick="switchTab(this,'completed')">已结算</div>
-  </div>
-  
-  <div class="table-container" id="tableContainer">
-    <table>
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="allCheck" onchange="checkAll()"></th>
-          <th>创建人</th> <!-- 新增：显示订单归属用户 -->
-          <th>渠道</th>
-          <th>金额</th>
-          <th>页数</th>
-          <th>进度</th>
-          <th>倒计时</th>
-          <th>状态</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="list"></tbody>
-    </table>
-    <div id="emptyState" class="empty-state" style="display:none">
-      <div class="empty-icon">📭</div>
-      <p style="font-size:16px;margin-bottom:8px">暂无订单数据</p>
-      <p style="font-size:13px">在上方录入区添加您的第一笔订单吧</p>
-    </div>
-  </div>
-  
-  <div class="pagination" id="pagination">
-    <span class="page-info">第 <span id="currentPage">1</span> 页 / 共 <span id="totalPages">1</span> 页</span>
-    <div class="page-btns">
-      <button class="page-btn" onclick="goToPage('first')">首页</button>
-      <button class="page-btn" onclick="goToPage('prev')">上一页</button>
-      <button class="page-btn" onclick="goToPage('next')">下一页</button>
-      <button class="page-btn" onclick="goToPage('last')">尾页</button>
-    </div>
-  </div>
-</div>
-<!-- 渠道管理模态框 -->
-<div class="modal" id="chModal" onclick="closeChByMask(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="title">🏪 渠道管理</div>
-    <div class="item"><label>渠道名称</label><input id="chName" placeholder="如：淘宝、闲鱼、零感"></div>
-    <div class="item"><label>分成比例（0-1）</label><input id="chRate" type="number" min="0" max="1" step="0.01" placeholder="0.4 表示 40%"></div>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn-success" onclick="addCh()" style="flex:1">➕ 添加渠道</button>
-      <button class="btn-default" onclick="closeCh()">关闭</button>
-    </div>
-    <div id="chList" style="margin-top:20px;max-height:250px;overflow-y:auto"></div>
-  </div>
-</div>
-<!-- 快捷键提示模态框 -->
-<div class="modal" id="shortcutModal" onclick="closeShortcutModal(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="title">⌨️ 快捷键列表</div>
-    <div style="font-size:13px;line-height:2">
-      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + S</kbd> 保存订单</div>
-      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + N</kbd> 新建订单（清空表单）</div>
-      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + D</kbd> 切换深色模式</div>
-      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + R</kbd> 刷新统计</div>
-      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + E</kbd> 导出选中订单</div>
-      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Esc</kbd> 关闭模态框</div>
-    </div>
-    <button class="btn-default" onclick="closeShortcutModal()" style="margin-top:16px;width:100%">关闭</button>
-  </div>
-</div>
-<!-- 分配订单弹窗（管理员专属） -->
-<div class="modal" id="assignOrderModal" onclick="closeAssignOrderModal(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="title">🔑 分配订单给用户（管理员专属）</div>
-    <div class="item">
-      <label>选择用户</label>
-      <select id="assignUserId" style="width:100%"></select>
-    </div>
-    <div class="item">
-      <label>选择订单（可多选）</label>
-      <div id="assignOrderList" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px"></div>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn-success" onclick="doAssignOrders()" style="flex:1">确认分配</button>
-      <button class="btn-default" onclick="closeAssignOrderModal()">取消</button>
-    </div>
-  </div>
-</div>
-<!-- Toast提示 -->
-<div class="tip-toast" id="toast"></div>
-<!-- 快捷键提示浮层 -->
-<div class="shortcut-hint" id="shortcutHint"></div>
+    <div class="container">
+        <h1>PPT制作管理系统</h1>
+        
+        <div class="tab-group">
+            <button class="tab active" data-target="loginForm">登录</button>
+            <button class="tab" data-target="registerForm">注册</button>
+        </div>
 
-<script>
-// ===== 核心：对接Supabase云端（只需要替换下面2个信息！）=====
-const supabaseUrl = "【https://wjotnzisntonzbehymcu.supabase.co】"; // 替换成你复制的Project URL（比如https://xxx.supabase.co）
-const supabaseKey = "【eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqb3RuemlzbnRvbnpiZWh5bWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjgzMzUsImV4cCI6MjA5MDY0NDMzNX0.SkRcXTW_ZttoqMg0j-9B61AiIFEXPbB6pyw-lGDXJgI】"; // 替换成你复制的Publishable Key（以eyJhbGci开头的）
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        <!-- 登录表单 -->
+        <div id="loginForm" class="form-container active">
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="loginUsername" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="loginPwd" placeholder="请输入密码">
+            </div>
+            <button class="btn" onclick="userLogin()">登录</button>
+        </div>
 
-// ===== 云端用户系统核心（替代原本地存储）=====
-const UserSystem = {
-  // 初始化默认管理员账号（首次使用自动创建）
-  async initDefaultAdmin() {
-    const { data: { users } } = await supabase.auth.listUsers();
-    // 检查是否已有admin账号
-    const hasAdmin = users.some(user => user.email === 'admin@ppt-system.com');
-    if (!hasAdmin) {
-      // 创建默认管理员账号（账号：admin，密码：123456）
-      await supabase.auth.signUp({
-        email: 'admin@ppt-system.com',
-        password: '123456',
-        options: {
-          data: {
-            username: 'admin',
-            role: 'admin'
-          }
+        <!-- 注册表单 -->
+        <div id="registerForm" class="form-container">
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="regUsername" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="regPwd" placeholder="请输入密码">
+            </div>
+            <button class="btn" onclick="userRegister()">注册</button>
+        </div>
+
+        <div class="tips">支持账号密码登录 / 注册</div>
+    </div>
+
+    <script>
+        // 选项卡切换
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const target = tab.dataset.target;
+                document.querySelectorAll('.form-container').forEach(form => {
+                    form.classList.remove('active');
+                });
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // 模拟用户数据（真实使用可替换为Supabase/后端）
+        let userList = JSON.parse(localStorage.getItem('userList')) || [];
+
+        // 注册
+        function userRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPwd').value.trim();
+
+            if (!username || !password) {
+                alert('请填写完整信息！');
+                return;
+            }
+
+            const user = userList.find(item => item.username === username);
+            if (user) {
+                alert('用户名已存在！');
+                return;
+            }
+
+            userList.push({ username, password });
+            localStorage.setItem('userList', JSON.stringify(userList));
+            alert('注册成功！请登录');
+            
+            // 切换到登录
+            document.querySelector('.tab[data-target="loginForm"]').click();
         }
-      });
-      // 创建测试设计师账号
-      await supabase.auth.signUp({
-        email: 'designer1@ppt-system.com',
-        password: '123456',
-        options: {
-          data: {
-            username: 'designer1',
-            role: 'designer'
-          }
+
+        // 登录
+        function userLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPwd').value.trim();
+
+            if (!username || !password) {
+                alert('请填写完整信息！');
+                return;
+            }
+
+            const user = userList.find(item => item.username === username && item.password === password);
+            if (!user) {
+                alert('用户名或密码错误！');
+                return;
+            }
+
+            alert('登录成功！');
+            // 登录成功后可跳转到主页
+            // location.href = 'home.html';
         }
-      });
-    }
-    
-    // 初始化订单表（如果不存在）
-    const { data: tableData } = await supabase.rpc('pg_tables', { schemaname: 'public' });
-    const hasOrderTable = tableData.some(table => table.tablename === 'ppt_orders');
-    if (!hasOrderTable) {
-      // 创建订单表
-      await supabase.rpc('create_ppt_orders_table');
-      // 开启行级安全
-      await supabase.rpc('enable_ppt_orders_rls');
-    }
-  },
-  
-  // 登录（对接云端）
-  async login(username, password) {
-    // 先通过用户名查询邮箱
-    const { data: { users } } = await supabase.auth.listUsers();
-    const user = users.find(u => u.user_metadata?.username === username);
-    if (!user) return { success: false, message: '用户名不存在' };
-    
-    // 用邮箱登录
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: password
-    });
-    
-    if (error) return { success: false, message: '密码错误' };
-    return { 
-      success: true, 
-      user: {
-        id: data.user.id,
-        username: data.user.user_metadata?.username,
-        role: data.user.user_metadata?.role || 'designer'
-      }
-    };
-  },
-  
-  // 注册（对接云端）
-  async register(username, password) {
-    // 检查用户名是否已存在
-    const { data: { users } } = await supabase.auth.listUsers();
-    const hasSameName = users.some(u => u.user_metadata?.username === username);
-    if (hasSameName) return { success: false, message: '用户名已存在' };
-    
-    // 创建账号（邮箱用用户名+随机后缀，避免冲突）
-    const email = `${username}_${Date.now()}@ppt-system.com`;
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: {
-          username: username,
-          role: 'designer'
-        }
-      }
-    });
-    
-    if (error) return { success: false, message: '注册失败，请重试' };
-    return { 
-      success: true, 
-      user: {
-        id: data.user.id,
-        username: username,
-        role: 'designer'
-      }
-    };
-  },
-  
-  // 退出登录
-  async logout() {
-    await supabase.auth.signOut();
-  },
-  
-  // 获取当前登录用户
-  async getCurrentUser() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return null;
-    return {
-      id: session.user.id,
-      username: session.user.user_metadata?.username,
-      role: session.user.user_metadata?.role || 'designer'
-    };
-  },
-  
-  // 获取所有用户（管理员专属）
-  async getAllUsers() {
-    const { data: { users }, error } = await supabase.auth.listUsers();
-    if (error) return [];
-    return users.map(user => ({
-      id: user.id,
-      username: user.user_metadata?.username || '未知用户',
-      role: user.user_metadata?.role || 'designer',
-      createdAt: user.created_at
-    }));
-  },
-  
-  // 删除用户（管理员专属）
-  async deleteUser(userId) {
-    // 不能删除管理员
-    const { data: { users } } = await supabase.auth.listUsers();
-    const user = users.find(u => u.id === userId);
-    if (user?.user_metadata?.role === 'admin') {
-      return { success: false, message: '不能删除管理员' };
-    }
-    
-    // 转移订单给管理员
-    const admin = users.find(u => u.user_metadata?.role === 'admin');
-    if (admin) {
-      await supabase
-        .from('ppt_orders')
-        .update({ 
-          user_id: admin.id,
-          created_by_name: admin.user_metadata?.username
-        })
-        .eq('user_id', userId);
-    }
-    
-    // 删除用户
-    const { error } = await supabase.auth.admin.deleteUser(userId);
-    if (error) return { success: false, message: '删除失败' };
-    return { success: true };
-  },
-  
-  // 分配订单给用户
-  async assignOrders(orderIds, targetUserId) {
-    const { data: { users } } = await supabase.auth.listUsers();
-    const targetUser = users.find(u => u.id === targetUserId);
-    if (!targetUser) return { success: false, message: '目标用户不存在' };
-    
-    const { error } = await supabase
-      .from('ppt_orders')
-      .update({ 
-        user_id: targetUserId,
-        created_by_name: targetUser.user_metadata?.username
-      })
-      .in('id', orderIds);
-    
-    if (error) return { success: false, message: '分配失败' };
-    return { success: true };
-  }
-};
-
-// ===== 云端订单操作核心（替代原本地存储）=====
-const OrderSystem = {
-  // 获取当前用户的订单（普通用户）/ 所有订单（管理员）
-  async getOrders(userId, isAdmin) {
-    let query = supabase.from('ppt_orders').select('*').order('created_at', { ascending: false });
-    if (!isAdmin) {
-      query = query.eq('user_id', userId);
-    }
-    const { data, error } = await query;
-    if (error) return [];
-    return data || [];
-  },
-  
-  // 保存订单
-  async saveOrder(order) {
-    const { data, error } = await supabase
-      .from('ppt_orders')
-      .insert([order])
-      .select();
-    if (error) return { success: false };
-    return { success: true };
-  },
-  
-  // 更新订单
-  async updateOrder(id, order) {
-    const { error } = await supabase
-      .from('ppt_orders')
-      .update(order)
-      .eq('id', id);
-    if (error) return { success: false };
-    return { success: true };
-  },
-  
-  // 删除订单
-  async deleteOrder(id) {
-    const { error } = await supabase
-      .from('ppt_orders')
-      .delete()
-      .eq('id', id);
-    if (error) return { success: false };
-    return { success: true };
-  },
-  
-  // 批量更新订单状态
-  async batchUpdateStatus(ids, status) {
-    const { error } = await supabase
-      .from('ppt_orders')
-      .update({ status: status })
-      .in('id', ids);
-    if (error) return { success: false };
-    return { success: true };
-  },
-  
-  // 获取所有订单（用于导出）
-  async getAllOrders() {
-    const { data, error } = await supabase
-      .from('ppt_orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) return [];
-    return data || [];
-  }
-};
-
-// ===== 存储模块（兼容原有功能）=====
-const Storage = {
-  get(key, defaultVal = null) {
-    try {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : defaultVal;
-    } catch (e) {
-      console.error('Storage get error:', e);
-      showToast('⚠️ 数据读取异常', 'error');
-      return defaultVal;
-    }
-  },
-  set(key, val) {
-    try {
-      localStorage.setItem(key, JSON.stringify(val));
-      this.autoBackup(key, val);
-      return true;
-    } catch (e) {
-      console.error('Storage set error:', e);
-      if (e.name === 'QuotaExceededError') {
-        showToast('❌ 存储空间不足，请清理浏览器缓存', 'error');
-      } else {
-        showToast('❌ 保存失败', 'error');
-      }
-      return false;
-    }
-  },
-  autoBackup(key, data) {
-    try {
-      const backups = this.get('autoBackups', {});
-      backups[key] = backups[key] || [];
-      backups[key].unshift({
-        data: data,
-        time: new Date().toISOString()
-      });
-      backups[key] = backups[key].slice(0, 3);
-      localStorage.setItem('autoBackups', JSON.stringify(backups));
-    } catch (e) {
-      console.error('Auto backup failed:', e);
-    }
-  },
-  exportToFile(data, filename) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-};
-
-// ===== 应用状态（基于云端数据）=====
-const AppState = {
-  channels: Storage.get('channel', {"零感":0.4,"创致":0.4,"阿木木":1.0}),
-  currentFilter: 'all',
-  currentProgress: 25,
-  countMode: 0,
-  charts: { count: null, money: null },
-  currentPage: 1,
-  pageSize: 20,
-  searchKeyword: '',
-  draft: Storage.get('draft', null)
-};
-
-// ===== 工具函数（保留原有功能）=====
-const Utils = {
-  fmtMoney: (v) => Number(v || 0).toFixed(2),
-  escapeHtml: (str) => {
-    if (!str) return '';
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  },
-  debounce: (fn, delay) => {
-    let timer = null;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(null, args), delay);
-    };
-  },
-  generateId: () => Date.now().toString(36) + Math.random().toString(36).substr(2),
-  formatDate: (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return isNaN(d) ? '' : d.toLocaleString('zh-CN');
-  },
-  getCountdown: (targetTime, mode) => {
-    if (!targetTime || mode === 2) return { text: '', color: '' };
-    const now = Date.now();
-    const target = new Date(targetTime).getTime();
-    const diff = target - now;
-    if (diff < 0) return { text: '已超时', color: 'var(--red)' };
-    const days = Math.floor(diff / 86400000);
-    const hours = Math.floor((diff % 86400000) / 3600000);
-    const mins = Math.floor((diff % 3600000) / 60000);
-    const text = mode === 0 ? `${days}天${hours}时${mins}分` : `${days}天`;
-    const color = diff < 86400000 ? 'var(--orange)' : 'var(--green)';
-    return { text, color };
-  },
-  getTrend: async (type) => {
-    const currentUser = await UserSystem.getCurrentUser();
-    const isAdmin = currentUser?.role === 'admin';
-    const list = await OrderSystem.getOrders(currentUser?.id, isAdmin);
-    
-    if (list.length < 2) return '-';
-    const now = new Date();
-    const thisWeek = list.filter(x => {
-      const d = new Date(x.created_at);
-      return (now - d) <= 7 * 86400000;
-    });
-    const lastWeek = list.filter(x => {
-      const d = new Date(x.created_at);
-      const diff = now - d;
-      return diff > 7 * 86400000 && diff <= 14 * 86400000;
-    });
-    if (lastWeek.length === 0) return '-';
-    
-    if (type === 'count') {
-      const trend = ((thisWeek.length - lastWeek.length) / lastWeek.length * 100).toFixed(0);
-      return trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→0%';
-    } else if (type === 'money') {
-      const thisTotal = thisWeek.reduce((sum, x) => sum + (Number(x.price) || 0), 0);
-      const lastTotal = lastWeek.reduce((sum, x) => sum + (Number(x.price) || 0), 0);
-      if (lastTotal === 0) return '-';
-      const trend = ((thisTotal - lastTotal) / lastTotal * 100).toFixed(0);
-      return trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→0%';
-    } else if (type === 'final') {
-      const thisFinal = thisWeek.reduce((sum, x) => sum + (Number(x.total) || 0), 0);
-      const lastFinal = lastWeek.reduce((sum, x) => sum + (Number(x.total) || 0), 0);
-      if (lastFinal === 0) return '-';
-      const trend = ((thisFinal - lastFinal) / lastFinal * 100).toFixed(0);
-      return trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→0%';
-    }
-    return '-';
-  }
-};
-
-// ===== 初始化函数（对接云端）=====
-async function init() {
-  // 初始化默认管理员和订单表
-  await UserSystem.initDefaultAdmin();
-  
-  // 检查是否已登录
-  const currentUser = await UserSystem.getCurrentUser();
-  if (currentUser) {
-    // 已登录，显示系统
-    await showSystem(currentUser);
-  } else {
-    // 未登录，显示登录页
-    document.getElementById('loginContainer').style.display = 'flex';
-  }
-}
-
-// ===== 登录/注册相关函数（对接云端）=====
-async function handleLogin() {
-  const username = document.getElementById('loginUsername').value.trim();
-  const password = document.getElementById('loginPassword').value.trim();
-  
-  if (!username || !password) {
-    showToast('❌ 用户名和密码不能为空', 'error');
-    return;
-  }
-  
-  const result = await UserSystem.login(username, password);
-  if (result.success) {
-    await showSystem(result.user);
-    showToast(`✅ 欢迎回来，${result.user.username}`, 'success');
-  } else {
-    showToast(`❌ ${result.message}`, 'error');
-  }
-}
-
-function showRegister() {
-  document.getElementById('registerModal').style.display = 'flex';
-}
-
-function closeRegisterModal(e) {
-  if (!e || e.target.id === 'registerModal') {
-    document.getElementById('registerModal').style.display = 'none';
-  }
-}
-
-async function handleRegister() {
-  const username = document.getElementById('regUsername').value.trim();
-  const password = document.getElementById('regPassword').value.trim();
-  const confirmPwd = document.getElementById('regPasswordConfirm').value.trim();
-  
-  if (!username || !password) {
-    showToast('❌ 用户名和密码不能为空', 'error');
-    return;
-  }
-  
-  if (password !== confirmPwd) {
-    showToast('❌ 两次密码不一致', 'error');
-    return;
-  }
-  
-  const result = await UserSystem.register(username, password);
-  if (result.success) {
-    showToast('✅ 注册成功，请登录', 'success');
-    closeRegisterModal();
-    // 自动填充用户名
-    document.getElementById('loginUsername').value = username;
-    document.getElementById('loginPassword').value = '';
-  } else {
-    showToast(`❌ ${result.message}`, 'error');
-  }
-}
-
-async function handleLogout() {
-  await UserSystem.logout();
-  window.location.reload();
-  showToast('✅ 已退出登录', 'success');
-}
-
-function fillTestAdmin() {
-  document.getElementById('loginUsername').value = 'admin';
-  document.getElementById('loginPassword').value = '123456';
-}
-
-function fillTestDesigner() {
-  document.getElementById('loginUsername').value = 'designer1';
-  document.getElementById('loginPassword').value = '123456';
-}
-
-// ===== 显示系统主界面（对接云端）=====
-async function showSystem(user) {
-  // 隐藏登录页
-  document.getElementById('loginContainer').style.display = 'none';
-  
-  // 显示系统核心区域
-  document.getElementById('mainToolbar').style.display = 'flex';
-  document.getElementById('dataBoard').style.display = 'block';
-  document.getElementById('orderInputCard').style.display = 'block';
-  document.getElementById('settlementCard').style.display = 'block';
-  document.getElementById('orderListCard').style.display = 'block';
-  
-  // 设置用户信息
-  document.getElementById('currentUserName').textContent = user.username;
-  const roleEl = document.getElementById('currentUserRole');
-  roleEl.textContent = user.role === 'admin' ? '管理员' : '设计师';
-  if (user.role === 'admin') {
-    roleEl.classList.add('admin-tag');
-    // 显示管理员功能区
-    document.getElementById('adminTools').style.display = 'block';
-  }
-  
-  // 初始化接单人（只读，自动填充当前用户名）
-  document.getElementById('user').value = user.username;
-  
-  // 初始化系统其他功能
-  renderChannels();
-  await renderTable(user.id, user.role === 'admin');
-  setProgress(25);
-  updateCountModeUI();
-  
-  const now = new Date().toISOString().slice(0, 16);
-  document.getElementById('timeOrder').value = now;
-  
-  if (AppState.draft) {
-    restoreDraft();
-  }
-  
-  setTimeout(initCharts, 300);
-  
-  const pasteArea = document.getElementById('pasteArea');
-  pasteArea.addEventListener('input', Utils.debounce(handlePasteInput, 400));
-  
-  registerShortcuts();
-  
-  if (localStorage.getItem('theme') === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('themeBtn').textContent = '☀️ 浅色';
-  }
-  
-  const savedCountMode = Storage.get('countMode', 0);
-  setCountMode(savedCountMode);
-  
-  await refreshStats(user.id, user.role === 'admin');
-}
-
-// ===== 管理员专属功能（对接云端）=====
-async function openUserManage() {
-  const users = await UserSystem.getAllUsers();
-  const userListEl = document.getElementById('userList');
-  
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th>用户名</th><th>角色</th><th>注册时间</th><th>操作</th></tr>';
-  users.forEach(user => {
-    html += `<tr>
-      <td>${Utils.escapeHtml(user.username)}</td>
-      <td>${user.role === 'admin' ? '<span style="color:var(--red);font-weight:600">管理员</span>' : '设计师'}</td>
-      <td>${Utils.formatDate(user.createdAt)}</td>
-      <td>
-        ${user.role !== 'admin' ? `<button onclick="deleteUser('${user.id}')" style="color:var(--red);font-size:12px;cursor:pointer">删除</button>` : '-'}
-      </td>
-    </tr>`;
-  });
-  html += '</table>';
-  userListEl.innerHTML = html;
-  
-  document.getElementById('userManageModal').style.display = 'flex';
-}
-
-function closeUserManageModal(e) {
-  if (!e || e.target.id === 'userManageModal') {
-    document.getElementById('userManageModal').style.display = 'none';
-  }
-}
-
-async function deleteUser(userId) {
-  if (!confirm('确定删除该用户？其名下订单将转移给管理员')) {
-    return;
-  }
-  const result = await UserSystem.deleteUser(userId);
-  if (result.success) {
-    showToast('✅ 用户已删除', 'success');
-    openUserManage();
-    const currentUser = await UserSystem.getCurrentUser();
-    await renderTable(currentUser.id, currentUser.role === 'admin');
-  } else {
-    showToast(`❌ ${result.message}`, 'error');
-  }
-}
-
-async function exportAllUsersData() {
-  const users = await UserSystem.getAllUsers();
-  const allOrders = await OrderSystem.getAllOrders();
-  const exportData = {
-    users: users.map(u => ({
-      username: u.username,
-      role: u.role,
-      createdAt: u.createdAt,
-      orderCount: allOrders.filter(o => o.user_id === u.id).length
-    })),
-    orders: allOrders,
-    exportTime: new Date().toISOString()
-  };
-  Storage.exportToFile(exportData, `全量数据导出_${new Date().toLocaleDateString()}.json`);
-  showToast('✅ 全量数据已导出', 'success');
-}
-
-async function resetAllTestData() {
-  if (!confirm('确定重置所有测试数据？包括用户、订单、配置都将恢复默认')) {
-    return;
-  }
-  // 删除所有用户（保留管理员）
-  const { data: { users } } = await supabase.auth.listUsers();
-  for (const user of users) {
-    if (user.user_metadata?.role !== 'admin') {
-      await supabase.auth.admin.deleteUser(user.id);
-    }
-  }
-  // 删除所有订单
-  await supabase.from('ppt_orders').delete().neq('id', '');
-  // 重置本地存储
-  localStorage.clear();
-  showToast('✅ 测试数据已重置', 'success');
-  setTimeout(() => window.location.reload(), 1500);
-}
-
-async function assignOrdersToUser() {
-  const users = (await UserSystem.getAllUsers()).filter(u => u.role === 'designer');
-  const allOrders = await OrderSystem.getAllOrders();
-  
-  // 填充用户下拉框
-  const userSelect = document.getElementById('assignUserId');
-  userSelect.innerHTML = '<option value="">选择目标用户</option>';
-  users.forEach(user => {
-    userSelect.innerHTML += `<option value="${user.id}">${user.username}</option>`;
-  });
-  
-  // 填充订单列表
-  const orderListEl = document.getElementById('assignOrderList');
-  let html = '';
-  allOrders.forEach(order => {
-    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-      <input type="checkbox" value="${order.id}" id="assignOrder_${order.id}">
-      <label for="assignOrder_${order.id}" style="font-size:12px;cursor:pointer">
-        ${order.channel} - ¥${order.price} - ${order.created_by_name || '未知用户'}
-      </label>
-    </div>`;
-  });
-  orderListEl.innerHTML = html;
-  
-  document.getElementById('assignOrderModal').style.display = 'flex';
-}
-
-function closeAssignOrderModal(e) {
-  if (!e || e.target.id === 'assignOrderModal') {
-    document.getElementById('assignOrderModal').style.display = 'none';
-  }
-}
-
-async function doAssignOrders() {
-  const targetUserId = document.getElementById('assignUserId').value;
-  const checkedOrders = document.querySelectorAll('#assignOrderList input:checked');
-  
-  if (!targetUserId) {
-    showToast('❌ 请选择目标用户', 'error');
-    return;
-  }
-  
-  if (checkedOrders.length === 0) {
-    showToast('❌ 请选择要分配的订单', 'error');
-    return;
-  }
-  
-  const orderIds = Array.from(checkedOrders).map(cb => cb.value);
-  const result = await UserSystem.assignOrders(orderIds, targetUserId);
-  
-  if (result.success) {
-    showToast(`✅ 已分配 ${orderIds.length} 条订单`, 'success');
-    closeAssignOrderModal();
-    const currentUser = await UserSystem.getCurrentUser();
-    await renderTable(currentUser.id, currentUser.role === 'admin');
-  } else {
-    showToast(`❌ ${result.message}`, 'error');
-  }
-}
-
-// ===== 图表初始化（对接云端数据）=====
-async function initCharts() {
-  const ctx1 = document.getElementById('chartCount');
-  const ctx2 = document.getElementById('chartMoney');
-  
-  if (!ctx1 || !ctx2) return;
-  
-  const currentUser = await UserSystem.getCurrentUser();
-  const isAdmin = currentUser?.role === 'admin';
-  const list = await OrderSystem.getOrders(currentUser?.id, isAdmin);
-  
-  // 处理订单趋势数据
-  const dateMap = {};
-  list.forEach(item => {
-    const date = item.created_at ? item.created_at.slice(0, 10) : '未知';
-    if (!dateMap[date]) {
-      dateMap[date] = { count: 0, money: 0 };
-    }
-    dateMap[date].count++;
-    dateMap[date].money += Number(item.total) || 0;
-  });
-  
-  const dates = Object.keys(dateMap).sort().slice(-30); // 最近30天
-  const counts = dates.map(d => dateMap[d].count);
-  const moneys = dates.map(d => dateMap[d].money);
-  
-  AppState.charts.count = new Chart(ctx1, {
-    type: 'line',
-    data: { 
-      labels: dates, 
-      datasets: [{ 
-        label: '订单数', 
-        borderColor: '#277ef0', 
-        backgroundColor: 'rgba(39,126,255,0.1)', 
-        fill: true, 
-        tension: 0.3,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }] 
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true, position: 'top' }
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } }
-      }
-    }
-  });
-  
-  AppState.charts.money = new Chart(ctx2, {
-    type: 'line',
-    data: { 
-      labels: dates, 
-      datasets: [{ 
-        label: '收益（元）', 
-        borderColor: '#00b42a', 
-        backgroundColor: 'rgba(0,180,42,0.1)', 
-        fill: true, 
-        tension: 0.3,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }] 
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true, position: 'top' }
-      },
-      scales: {
-        y: { beginAtZero: true }
-      }
-    }
-  });
-  
-  AppState.charts.count.data.datasets[0].data = counts;
-  AppState.charts.money.data.datasets[0].data = moneys;
-  AppState.charts.count.update();
-  AppState.charts.money.update();
-}
-
-// ===== 保留原有功能函数（对接云端订单系统）=====
-function handlePasteInput(e) {
-  const text = e.target.value.trim();
-  if (!text) return;
-  
-  let pageFound = false;
-  let priceFound = false;
-  let channelFound = false;
-  
-  const pagePatterns = [
-    /(\d+)\s*[页pP](?:PT|pt|幻灯片)?/,
-    /共\s*(\d+)\s*[页pP]/,
-    /(\d+)\s*[页pP]\s*左右/
-  ];
-  
-  for (const pattern of pagePatterns) {
-    const match = text.match(pattern);
-    if (match) {
-      const pageNum = parseInt(match[1]);
-      if (pageNum > 0 && pageNum < 500) {
-        document.getElementById('page').value = pageNum;
-        pageFound = true;
-        break;
-      }
-    }
-  }
-  
-  const pricePatterns = [
-    /原价[：:]\s*(\d+)/,
-    /(\d+)\s*[元¥]/,
-    /[¥￥]\s*(\d+)/,
-    /价格[：:]\s*(\d+)/,
-    /(\d+)\s*块/
-  ];
-  
-  for (const pattern of pricePatterns) {
-    const match = text.match(pattern);
-    if (match) {
-      const priceNum = parseInt(match[1]);
-      if (priceNum >= 50 && priceNum <= 50000) {
-        document.getElementById('price').value = priceNum;
-        priceFound = true;
-        break;
-      }
-    }
-  }
-  
-  if (!priceFound) {
-    const numbers = text.match(/\d+/g);
-    if (numbers && numbers.length > 0) {
-      const allNumbers = numbers.map(n => parseInt(n));
-      let candidateNumbers = allNumbers;
-      if (pageFound) {
-        const pageNum = parseInt(document.getElementById('page').value);
-        candidateNumbers = allNumbers.filter(n => n !== pageNum);
-      }
-      const priceCandidates = candidateNumbers.filter(n => n >= 50);
-      if (priceCandidates.length > 0) {
-        const maxPrice = Math.max(...priceCandidates);
-        document.getElementById('price').value = maxPrice;
-        priceFound = true;
-      }
-    }
-  }
-  
-  const channelKeywords = Object.keys(AppState.channels);
-  for (const keyword of
+    </script>
+</body>
+</html>
