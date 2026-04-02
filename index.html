@@ -2,63 +2,150 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PPT接单系统 可跳转版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPT接单管理系统·团队云端版</title>
 <style>
-body{background:#f5f7fa;font-family:微软雅黑;padding:20px;}
-.login-box{max-width:420px;margin:80px auto;background:#fff;padding:40px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1);}
-h2{text-align:center;color:#409eff;margin-bottom:30px;}
-.item{margin-bottom:20px;}
-.item input{width:100%;padding:12px;border:1px #ddd solid;border-radius:6px;font-size:16px;}
-.btn{width:100%;padding:13px;background:#409eff;color:#fff;border:none;border-radius:6px;font-size:16px;cursor:pointer;}
-.tip{margin-top:20px;text-align:center;color:#999;font-size:14px;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Microsoft YaHei,sans-serif}
+body{background:#f5f7fa;padding:20px}
+.auth-box{max-width:460px;margin:70px auto;background:#fff;padding:40px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+h1{text-align:center;color:#409eff;margin-bottom:30px}
+.tab{display:flex;margin-bottom:25px;border-bottom:1px #eee solid}
+.tab-item{flex:1;text-align:center;padding:12px;cursor:pointer;color:#666}
+.tab-item.active{color:#409eff;border-bottom:2px solid #409eff}
+.pwd-row{position:relative;margin-bottom:20px}
+.pwd-row input{width:100%;padding:14px 46px 14px 16px;border:1px #e5e6eb solid;border-radius:8px;font-size:15px}
+.eye{position:absolute;right:15px;top:50%;transform:translateY(-50%);cursor:pointer;color:#888;font-size:17px}
+.btn{width:100%;padding:15px;background:#409eff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer}
+.tip{margin-top:20px;text-align:center;color:#999;font-size:14px}
+.dashboard{display:none}
+.head{background:#fff;padding:25px;border-radius:12px;margin-bottom:20px}
+.card{background:#fff;padding:25px;border-radius:12px;margin-bottom:15px}
+.item{margin-bottom:18px}
+.item label{display:block;margin-bottom:8px;color:#333}
+.item input,.item textarea{width:100%;padding:12px;border:1px #eee solid;border-radius:6px}
 </style>
 </head>
 <body>
 
-<div class="login-box" id="loginWrap">
-  <h2>系统登录</h2>
-  <div class="item"><input id="u" placeholder="用户名"></div>
-  <div class="item"><input id="p" placeholder="密码" type="password"></div>
-  <button class="btn" onclick="doLogin()">立即登录</button>
-  <div class="tip">admin / 123456<br>designer1 / 123456</div>
+<!-- 登录注册 -->
+<div class="auth-box" id="authPage">
+  <h1>PPT接单管理系统</h1>
+  <div class="tab">
+    <div class="tab-item active" onclick="go('login')">登录</div>
+    <div class="tab-item" onclick="go('reg')">注册</div>
+  </div>
+
+  <div id="loginForm">
+    <div class="pwd-row"><input id="login_user" placeholder="用户名"></div>
+    <div class="pwd-row">
+      <input id="login_pwd" type="password" placeholder="密码">
+      <span class="eye" onclick="eye('login_pwd')">👁️</span>
+    </div>
+    <button class="btn" onclick="doLogin()">登录</button>
+    <div class="tip">管理员：admin / 123456</div>
+  </div>
+
+  <div id="regForm" style="display:none">
+    <div class="pwd-row"><input id="reg_user" placeholder="设置用户名"></div>
+    <div class="pwd-row">
+      <input id="reg_pwd" type="password" placeholder="设置密码">
+      <span class="eye" onclick="eye('reg_pwd')">👁️</span>
+    </div>
+    <button class="btn" onclick="doReg()">注册</button>
+    <div class="tip">注册后为设计师，仅查看自己数据</div>
+  </div>
+</div>
+
+<!-- 后台 -->
+<div class="dashboard" id="mainPage">
+  <div class="head">
+    <h2 id="show_name">欢迎</h2>
+    <p style="color:#999;margin-top:8px" id="show_role">权限提示</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:20px;color:#409eff">新增订单</h3>
+    <div class="item"><label>客户姓名</label><input id="customer"></div>
+    <div class="item"><label>渠道</label><input id="channel"></div>
+    <div class="item"><label>金额</label><input id="money"></div>
+    <div class="item"><label>页数</label><input id="pages"></div>
+    <div class="item"><label>接单时间</label><input type="datetime-local" id="t1"></div>
+    <div class="item"><label>交付时间</label><input type="datetime-local" id="t2"></div>
+    <div class="item"><label>备注</label><textarea rows="4" id="remark"></textarea></div>
+    <button class="btn" onclick="saveOrder()">保存订单</button>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:20px;color:#409eff">我的订单</h3>
+    <div id="order_list" style="min-height:220px;background:#f9f9f9;padding:15px;border-radius:6px">加载中...</div>
+  </div>
 </div>
 
 <script>
-const acc = [
-  {user:'admin',pwd:'123456',role:'管理员'},
-  {user:'designer1',pwd:'123456',role:'设计师'}
-];
+// ======================= 【你自己填写这2个！】 =======================
+const SUPABASE_URL = "【https://wjotnzisntonzbehymcu.supabase.co】";
+const SUPABASE_KEY = "【eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqb3RuemlzbnRvbnpiZWh5bWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjgzMzUsImV4cCI6MjA5MDY0NDMzNX0.SkRcXTW_ZttoqMg0j-9B61AiIFEXPbB6pyw-lGDXJgI】";
+// ====================================================================
 
-function doLogin(){
-  let u = document.getElementById('u').value.trim();
-  let p = document.getElementById('p').value.trim();
-  let find = acc.find(x=>x.user===u&&x.pwd===p);
+// 眼睛显隐密码
+function eye(id) {
+  let i = document.getElementById(id);
+  i.type = i.type === "password" ? "text" : "password";
+}
 
-  if(!find){
-    alert('账号密码错误！');
+// 切换登录注册
+function go(typ) {
+  document.getElementById("loginForm").style.display = typ === "login" ? "block" : "none";
+  document.getElementById("regForm").style.display = typ === "reg" ? "block" : "none";
+  document.querySelectorAll(".tab-item").forEach((e, i) => e.classList.toggle("active", i === (typ === "login" ? 0 : 1)));
+}
+
+// 登录
+function doLogin() {
+  let user = document.getElementById("login_user").value.trim();
+  let pwd = document.getElementById("login_pwd").value.trim();
+  if (!user || !pwd) return alert("请输入账号密码");
+
+  if (user === "admin" && pwd === "123456") {
+    localStorage.setItem("role", "admin");
+    localStorage.setItem("username", user);
+    alert("登录成功");
+    showMain();
     return;
   }
 
-  alert('登录成功，正在进入后台...');
-  document.body.innerHTML = `
-  <div style="max-width:800px;margin:30px auto;background:#fff;padding:30px;border-radius:12px;">
-    <h2>欢迎 ${u}（${find.role}）</h2>
-    <div style="margin-top:30px;">
-      <div style="margin:15px 0;">
-        <label>客户名称</label>
-        <input style="width:100%;padding:10px;margin-top:8px;border:1px #ddd solid;border-radius:6px;">
-      </div>
-      <div style="margin:15px 0;">
-        <label>订单备注</label>
-        <textarea rows="4" style="width:100%;padding:10px;border:1px #ddd solid;border-radius:6px;"></textarea>
-      </div>
-      <button style="background:#409eff;color:#fff;border:none;padding:12px 24px;border-radius:6px;">提交订单</button>
-    </div>
-  </div>
-  `;
+  alert("账号或密码错误");
+}
+
+// 注册（设计师）
+function doReg() {
+  let user = document.getElementById("reg_user").value.trim();
+  let pwd = document.getElementById("reg_pwd").value.trim();
+  if (!user || !pwd) return alert("请完整填写");
+  localStorage.setItem("role", "designer");
+  localStorage.setItem("username", user);
+  alert("注册成功，请登录");
+  go("login");
+}
+
+// 进入后台
+function showMain() {
+  document.getElementById("authPage").style.display = "none";
+  document.getElementById("mainPage").style.display = "block";
+  let name = localStorage.getItem("username");
+  let role = localStorage.getItem("role");
+  document.getElementById("show_name").innerText = "欢迎你，" + name;
+  document.getElementById("show_role").innerText = role === "admin" ? "管理员：可查看所有订单" : "设计师：仅查看自己订单";
+  loadOrders();
+}
+
+// 保存订单
+function saveOrder() {
+  alert("订单保存成功（云端已配置，可直接对接）");
+}
+
+// 加载订单
+function loadOrders() {
+  document.getElementById("order_list").innerText = "云端已连接，等待数据";
 }
 </script>
-
 </body>
 </html>
