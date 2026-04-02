@@ -3,92 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPT接单管理系统·团队云端版</title>
+<title>PPT接单管理系统 | 管理员后台</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Microsoft YaHei,sans-serif}
-body{background:#f5f7fa;padding:20px}
-.auth-box{max-width:460px;margin:70px auto;background:#fff;padding:40px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06)}
-h1{text-align:center;color:#409eff;margin-bottom:30px}
-.tab{display:flex;margin-bottom:25px;border-bottom:1px #eee solid}
-.tab-item{flex:1;text-align:center;padding:12px;cursor:pointer;color:#666}
-.tab-item.active{color:#409eff;border-bottom:2px solid #409eff}
-.pwd-row{position:relative;margin-bottom:20px}
-.pwd-row input{width:100%;padding:14px 46px 14px 16px;border:1px #e5e6eb;border-radius:8px;font-size:15px}
-.eye{position:absolute;right:15px;top:50%;transform:translateY(-50%);cursor:pointer;color:#888;font-size:17px}
-.btn{width:100%;padding:15px;background:#409eff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;margin-top:10px}
-.btn:active{opacity:0.9}
-.tip{margin-top:20px;text-align:center;color:#999;font-size:14px}
-.dashboard{display:none}
-.head{background:#fff;padding:25px;border-radius:12px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-.head-right button{padding:8px 16px;background:#f5f7fa;border:1px solid #ddd;border-radius:6px;color:#333;font-size:14px;cursor:pointer}
-.card{background:#fff;padding:25px;border-radius:12px;margin-bottom:15px}
-.item{margin-bottom:18px}
-.item label{display:block;margin-bottom:8px;color:#333}
-.item input,.item textarea{width:100%;padding:12px;border:1px solid #eee;border-radius:6px}
-/* 弹窗样式 */
-.modal-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:999}
-.modal-box{background:#fff;padding:30px;border-radius:12px;width:90%;max-width:420px}
-.modal-title{font-size:18px;margin-bottom:20px;color:#333}
+  /* ===== 全局重置 & 基础样式 ===== */
+  *{box-sizing:border-box;margin:0;padding:0;font-family:"Inter",system-ui,-apple-system,BlindMacOSXFont,sans-serif}
+  body{background:#f6f8fa;margin:0;padding:0;color:#24292f}
+  /* ===== 布局容器 ===== */
+  .app-container{display:flex;min-height:100vh}
+  /* ===== 侧边栏 ===== */
+  .sidebar{width:260px;background:#ffffff;border-right:1px solid #e1e4e8;padding:24px 0;display:flex;flex-direction:column}
+  .sidebar-logo{font-size:18px;font-weight:700;color:#24292f;padding:0 24px 20px;margin-bottom:20px;border-bottom:1px solid #e1e4e8}
+  .sidebar-menu{list-style:none;padding:0}
+  .sidebar-menu li{margin:4px 0}
+  .sidebar-menu a{display:flex;align-items:center;padding:10px 24px;border-radius:6px;color:#586069;text-decoration:none;font-size:14px;font-weight:500}
+  .sidebar-menu a.active{background:#0969da;color:#ffffff}
+  .sidebar-menu a:hover:not(.active){background:#f6f8fa;color:#24292f}
+  .sidebar-menu .icon{margin-right:12px;font-size:16px;width:20px;text-align:center}
+  /* ===== 主内容区 ===== */
+  .main-content{flex:1;padding:24px;display:flex;flex-direction:column}
+  /* ===== 顶部导航栏 ===== */
+  .top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #e1e4e8}
+  .nav-left{font-size:16px;font-weight:600;color:#24292f}
+  .nav-right{display:flex;gap:12px;align-items:center}
+  .user-info{display:flex;align-items:center;gap:8px;color:#24292f;font-size:14px}
+  .user-info .role{background:#e1e4e8;padding:2px 8px;border-radius:12px;font-size:12px;color:#586069}
+  .btn-nav{padding:8px 12px;border-radius:6px;border:1px solid #e1e4e8;background:#ffffff;color:#24292f;font-size:13px;cursor:pointer}
+  .btn-nav:hover{background:#f6f8fa}
+  .btn-nav.primary{background:#0969da;color:#ffffff;border-color:#0969da}
+  /* ===== 数据卡片 ===== */
+  .data-card{background:#ffffff;border:1px solid #e1e4e8;border-radius:10px;padding:24px;margin-bottom:20px}
+  .card-title{font-size:16px;font-weight:600;color:#24292f;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .card-title .icon{color:#0969da}
+  /* ===== 订单列表样式 ===== */
+  .order-table{width:100%;border-collapse:collapse}
+  .order-table th{text-align:left;padding:12px 16px;background:#f6f8fa;font-size:13px;font-weight:600;color:#586069;border-bottom:1px solid #e1e4e8}
+  .order-table td{padding:16px;border-bottom:1px solid #e1e4e8;font-size:14px;color:#24292f}
+  .order-table tr:hover{background:#f6f8fa}
+  .status-badge{padding:4px 8px;border-radius:12px;font-size:12px;font-weight:500}
+  .status-pending{background:#fff8e5;color:#966514}
+  .status-completed{background:#dafbe1;color:#1a7f37}
+  /* ===== 弹窗样式 ===== */
+  .modal-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:1000}
+  .modal-box{background:#fff;padding:28px;border-radius:12px;width:90%;max-width:440px;border:1px solid #e1e4e8}
+  .modal-title{font-size:18px;font-weight:600;color:#24292f;margin-bottom:20px}
+  .form-group{margin-bottom:20px}
+  .form-group label{display:block;margin-bottom:8px;font-size:14px;font-weight:500;color:#24292f}
+  .form-control{width:100%;padding:10px 12px;border:1px solid #e1e4e8;border-radius:6px;font-size:14px}
+  .form-control:focus{outline:none;border-color:#0969da;box-shadow:0 0 0 3px rgba(9,105,218,0.2)}
+  .pwd-row{position:relative}
+  .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6a737d}
+  .modal-footer{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
+  .btn{padding:10px 16px;border-radius:6px;border:1px solid transparent;font-size:14px;font-weight:500;cursor:pointer}
+  .btn-default{background:#ffffff;border-color:#e1e4e8;color:#24292f}
+  .btn-primary{background:#0969da;border-color:#0969da;color:#ffffff}
+  /* ===== 空状态 ===== */
+  .empty-state{text-align:center;padding:40px 20px;color:#586069}
+  .empty-state .icon{font-size:48px;margin-bottom:16px;color:#e1e4e8}
 </style>
 </head>
 <body>
 
-<!-- 登录注册 -->
-<div class="auth-box" id="authPage">
-  <h1>PPT接单管理系统</h1>
-  <div class="tab">
-    <div class="tab-item active" onclick="go('login')">登录</div>
-    <div class="tab-item" onclick="go('reg')">注册</div>
+<div class="app-container">
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="sidebar-logo">📊 PPT接单管理</div>
+    <ul class="sidebar-menu">
+      <li><a href="javascript:;" class="active"><span class="icon">📋</span> 接单记录汇总</a></li>
+      <!-- 管理员隐藏新增订单入口 -->
+    </ul>
   </div>
 
-  <div id="loginForm">
-    <div class="pwd-row"><input id="login_user" placeholder="用户名"></div>
-    <div class="pwd-row">
-      <input id="login_pwd" type="password" placeholder="密码">
-      <span class="eye" onclick="eye('login_pwd')">👁️</span>
+  <!-- 主内容区 -->
+  <div class="main-content">
+    <!-- 顶部导航 -->
+    <div class="top-nav">
+      <div class="nav-left">接单记录汇总</div>
+      <div class="nav-right">
+        <div class="user-info">
+          <span id="show_name">管理员</span>
+          <span class="role" id="show_role">管理员</span>
+        </div>
+        <button class="btn-nav" onclick="openModal('pwdModal')">🔑 修改密码</button>
+        <button class="btn-nav primary" onclick="handleLogout()">🚪 退出登录</button>
+      </div>
     </div>
-    <button class="btn" onclick="doLogin()">登录</button>
-    <div class="tip">管理员：admin / 123456</div>
-  </div>
 
-  <div id="regForm" style="display:none">
-    <div class="pwd-row"><input id="reg_user" placeholder="设置用户名"></div>
-    <div class="pwd-row">
-      <input id="reg_pwd" type="password" placeholder="设置密码">
-      <span class="eye" onclick="eye('reg_pwd')">👁️</span>
+    <!-- 订单数据卡片 -->
+    <div class="data-card">
+      <div class="card-title"><span class="icon">📋</span> 接单记录台账</div>
+      <div id="order_list" class="order-table">
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <div>暂无订单数据，开始记录吧</div>
+        </div>
+      </div>
     </div>
-    <button class="btn" onclick="doReg()">注册</button>
-    <div class="tip">注册后为设计师，仅查看自己订单</div>
-  </div>
-</div>
-
-<!-- 后台 -->
-<div class="dashboard" id="mainPage">
-  <div class="head">
-    <div>
-      <h2 id="show_name">欢迎</h2>
-      <p style="color:#999;margin-top:4px" id="show_role">权限提示</p>
-    </div>
-    <div class="head-right">
-      <button onclick="openModal('pwdModal')">修改密码</button>
-    </div>
-  </div>
-  
-  <div class="card">
-    <h3 style="margin-bottom:20px;color:#409eff">新增订单</h3>
-    <div class="item"><label>客户姓名</label><input id="customer" placeholder="例如：XX公司"></div>
-    <div class="item"><label>渠道</label><input id="channel" placeholder="淘宝/抖音/老客户"></div>
-    <div class="item"><label>金额</label><input id="money" placeholder="例如：800"></div>
-    <div class="item"><label>页数</label><input id="pages" placeholder="例如：20P"></div>
-    <div class="item"><label>接单时间</label><input type="datetime-local" id="t1"></div>
-    <div class="item"><label>交付时间</label><input type="datetime-local" id="t2"></div>
-    <div class="item"><label>备注</label><textarea rows="4" id="remark" placeholder="详细需求描述"></textarea></div>
-    <button class="btn" onclick="saveOrder()">保存订单</button>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-bottom:20px;color:#409eff">我的订单</h3>
-    <div id="order_list" style="min-height:220px;background:#f9f9f9;padding:15px;border-radius:6px">加载中...</div>
   </div>
 </div>
 
@@ -97,26 +106,34 @@ h1{text-align:center;color:#409eff;margin-bottom:30px}
   <div class="modal-box">
     <div class="modal-title">修改账号密码</div>
     
-    <div class="pwd-row">
-      <label>原密码</label>
-      <input id="old_pwd" type="password" placeholder="请输入原登录密码">
-      <span class="eye" onclick="eye('old_pwd')">👁️</span>
+    <div class="form-group">
+      <label for="old_pwd">原密码</label>
+      <div class="pwd-row">
+        <input id="old_pwd" type="password" class="form-control" placeholder="请输入原登录密码">
+        <span class="eye" onclick="eye('old_pwd')">👁️</span>
+      </div>
     </div>
 
-    <div class="pwd-row">
-      <label>新密码</label>
-      <input id="new_pwd" type="password" placeholder="设置新密码">
-      <span class="eye" onclick="eye('new_pwd')">👁️</span>
+    <div class="form-group">
+      <label for="new_pwd">新密码</label>
+      <div class="pwd-row">
+        <input id="new_pwd" type="password" class="form-control" placeholder="设置新密码（不少于6位）">
+        <span class="eye" onclick="eye('new_pwd')">👁️</span>
+      </div>
     </div>
 
-    <div class="pwd-row">
-      <label>确认新密码</label>
-      <input id="confirm_pwd" type="password" placeholder="再次输入新密码">
-      <span class="eye" onclick="eye('confirm_pwd')">👁️</span>
+    <div class="form-group">
+      <label for="confirm_pwd">确认新密码</label>
+      <div class="pwd-row">
+        <input id="confirm_pwd" type="password" class="form-control" placeholder="再次输入新密码">
+        <span class="eye" onclick="eye('confirm_pwd')">👁️</span>
+      </div>
     </div>
 
-    <button class="btn" style="background:#67c23a" onclick="updatePwd()">确认修改</button>
-    <button class="btn" style="background:#f56c6c;margin-left:10px" onclick="closeModal('pwdModal')">取消</button>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('pwdModal')">取消</button>
+      <button class="btn btn-primary" onclick="updatePwd()">确认修改</button>
+    </div>
   </div>
 </div>
 
@@ -140,107 +157,65 @@ function closeModal(id) {
   document.getElementById(id).style.display = "none";
 }
 
-// 切换登录注册
-function go(typ) {
-  document.getElementById("loginForm").style.display = typ === "login" ? "block" : "none";
-  document.getElementById("regForm").style.display = typ === "reg" ? "block" : "none";
-  document.querySelectorAll(".tab-item").forEach((e, i) => e.classList.toggle("active", i === (typ === "login" ? 0 : 1)));
-}
-
-// 登录逻辑
-function doLogin() {
-  let user = document.getElementById("login_user").value.trim();
-  let pwd = document.getElementById("login_pwd").value.trim();
-  if (!user || !pwd) return alert("请输入账号密码");
-
-  // 简单的权限模拟逻辑（实际云端逻辑后续可接入）
-  if (user === "admin" && pwd === "123456") {
-    localStorage.setItem("role", "admin");
-    localStorage.setItem("username", user);
-    localStorage.setItem("password", pwd); // 模拟存储
-    alert("登录成功");
-    showMain();
-    return;
+// 退出登录
+function handleLogout() {
+  if(confirm("确定要退出登录吗？")) {
+    localStorage.clear();
+    window.location.reload();
   }
-  
-  // 模拟设计师登录逻辑（实际项目中需从云端读取）
-  let savedPwd = localStorage.getItem("pwd_" + user);
-  if (savedPwd && savedPwd === pwd) {
-    localStorage.setItem("role", "designer");
-    localStorage.setItem("username", user);
-    localStorage.setItem("password", pwd);
-    alert("登录成功");
-    showMain();
-    return;
-  }
-
-  alert("账号或密码错误");
 }
 
-// 注册逻辑（设计师）
-function doReg() {
-  let user = document.getElementById("reg_user").value.trim();
-  let pwd = document.getElementById("reg_pwd").value.trim();
-  if (!user || !pwd) return alert("请完整填写");
+// 初始化（模拟管理员身份，实际对接云端后替换）
+function initAdmin() {
+  document.getElementById("authPage")?.remove(); // 移除登录页（如果存在）
+  document.querySelector(".app-container").style.display = "flex";
   
-  // 检查是否重复
-  if (localStorage.getItem("pwd_" + user)) return alert("该用户名已存在");
+  let name = localStorage.getItem("username") || "管理员";
+  document.getElementById("show_name").innerText = name;
+  document.getElementById("show_role").innerText = "管理员";
   
-  localStorage.setItem("pwd_" + user, pwd); // 模拟存云端
-  localStorage.setItem("role", "designer");
-  localStorage.setItem("username", user);
-  alert("注册成功，请登录");
-  go("login");
-}
-
-// 进入后台
-function showMain() {
-  document.getElementById("authPage").style.display = "none";
-  document.getElementById("mainPage").style.display = "block";
-  let name = localStorage.getItem("username");
-  let role = localStorage.getItem("role");
-  document.getElementById("show_name").innerText = "欢迎你，" + name;
-  document.getElementById("show_role").innerText = role === "admin" ? "管理员：可查看所有订单" : "设计师：仅查看自己订单";
   loadOrders();
 }
 
-// 保存订单
+// 保存订单（模拟，后续对接云端）
 function saveOrder() {
-  alert("功能已准备就绪，云端接口待配置");
+  alert("功能已预留，后续对接云端数据库");
 }
 
-// 加载订单
+// 加载订单（模拟，实际对接云端）
 function loadOrders() {
-  document.getElementById("order_list").innerText = "云端连接成功，数据模块已加载";
+  const listEl = document.getElementById("order_list");
+  // 这里后续替换为从 Supabase 读取所有订单的逻辑
+  listEl.innerHTML = `
+    <div class="empty-state">
+      <div class="icon">📭</div>
+      <div>云端连接成功，正在加载订单数据...</div>
+    </div>
+  `;
 }
 
-// 修改密码
+// 修改密码（模拟，实际对接云端）
 function updatePwd() {
   let oldPwd = document.getElementById("old_pwd").value.trim();
   let newPwd = document.getElementById("new_pwd").value.trim();
   let confirmPwd = document.getElementById("confirm_pwd").value.trim();
   
-  let currUser = localStorage.getItem("username");
-  let currRole = localStorage.getItem("role");
-  let realOldPwd = localStorage.getItem(currRole === "admin" ? "password" : "pwd_" + currUser);
-
-  if (oldPwd !== realOldPwd) return alert("原密码输入错误！");
-  if (newPwd.length < 6) return alert("新密码长度不能少于6位");
-  if (newPwd !== confirmPwd) return alert("两次输入的新密码不一致");
-
-  // 模拟修改云端密码
-  if (currRole === "admin") {
-    localStorage.setItem("password", newPwd);
-  } else {
-    localStorage.setItem("pwd_" + currUser, newPwd);
-  }
+  let realOldPwd = "123456"; // 模拟原密码，实际从云端读取
   
+  if(oldPwd !== realOldPwd) return alert("原密码输入错误！");
+  if(newPwd.length < 6) return alert("新密码长度不能少于6位");
+  if(newPwd !== confirmPwd) return alert("两次输入的新密码不一致！");
+
   alert("密码修改成功！请重新登录以生效");
   closeModal('pwdModal');
-  // 退出登录
-  localStorage.clear();
-  location.reload();
+  handleLogout();
 }
+
+// 页面加载自动初始化
+window.onload = function() {
+  // 如果是管理员直接进入后台
+  initAdmin();
+};
 </script>
 </body>
 </html>
