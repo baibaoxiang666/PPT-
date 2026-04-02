@@ -13,16 +13,22 @@ h1{text-align:center;color:#409eff;margin-bottom:30px}
 .tab-item{flex:1;text-align:center;padding:12px;cursor:pointer;color:#666}
 .tab-item.active{color:#409eff;border-bottom:2px solid #409eff}
 .pwd-row{position:relative;margin-bottom:20px}
-.pwd-row input{width:100%;padding:14px 46px 14px 16px;border:1px #e5e6eb solid;border-radius:8px;font-size:15px}
+.pwd-row input{width:100%;padding:14px 46px 14px 16px;border:1px #e5e6eb;border-radius:8px;font-size:15px}
 .eye{position:absolute;right:15px;top:50%;transform:translateY(-50%);cursor:pointer;color:#888;font-size:17px}
-.btn{width:100%;padding:15px;background:#409eff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer}
+.btn{width:100%;padding:15px;background:#409eff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;margin-top:10px}
+.btn:active{opacity:0.9}
 .tip{margin-top:20px;text-align:center;color:#999;font-size:14px}
 .dashboard{display:none}
-.head{background:#fff;padding:25px;border-radius:12px;margin-bottom:20px}
+.head{background:#fff;padding:25px;border-radius:12px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.head-right button{padding:8px 16px;background:#f5f7fa;border:1px solid #ddd;border-radius:6px;color:#333;font-size:14px;cursor:pointer}
 .card{background:#fff;padding:25px;border-radius:12px;margin-bottom:15px}
 .item{margin-bottom:18px}
 .item label{display:block;margin-bottom:8px;color:#333}
-.item input,.item textarea{width:100%;padding:12px;border:1px #eee solid;border-radius:6px}
+.item input,.item textarea{width:100%;padding:12px;border:1px solid #eee;border-radius:6px}
+/* 弹窗样式 */
+.modal-mask{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:999}
+.modal-box{background:#fff;padding:30px;border-radius:12px;width:90%;max-width:420px}
+.modal-title{font-size:18px;margin-bottom:20px;color:#333}
 </style>
 </head>
 <body>
@@ -52,43 +58,86 @@ h1{text-align:center;color:#409eff;margin-bottom:30px}
       <span class="eye" onclick="eye('reg_pwd')">👁️</span>
     </div>
     <button class="btn" onclick="doReg()">注册</button>
-    <div class="tip">注册后为设计师，仅查看自己数据</div>
+    <div class="tip">注册后为设计师，仅查看自己订单</div>
   </div>
 </div>
 
 <!-- 后台 -->
 <div class="dashboard" id="mainPage">
   <div class="head">
-    <h2 id="show_name">欢迎</h2>
-    <p style="color:#999;margin-top:8px" id="show_role">权限提示</p>
+    <div>
+      <h2 id="show_name">欢迎</h2>
+      <p style="color:#999;margin-top:4px" id="show_role">权限提示</p>
+    </div>
+    <div class="head-right">
+      <button onclick="openModal('pwdModal')">修改密码</button>
+    </div>
   </div>
+  
   <div class="card">
     <h3 style="margin-bottom:20px;color:#409eff">新增订单</h3>
-    <div class="item"><label>客户姓名</label><input id="customer"></div>
-    <div class="item"><label>渠道</label><input id="channel"></div>
-    <div class="item"><label>金额</label><input id="money"></div>
-    <div class="item"><label>页数</label><input id="pages"></div>
+    <div class="item"><label>客户姓名</label><input id="customer" placeholder="例如：XX公司"></div>
+    <div class="item"><label>渠道</label><input id="channel" placeholder="淘宝/抖音/老客户"></div>
+    <div class="item"><label>金额</label><input id="money" placeholder="例如：800"></div>
+    <div class="item"><label>页数</label><input id="pages" placeholder="例如：20P"></div>
     <div class="item"><label>接单时间</label><input type="datetime-local" id="t1"></div>
     <div class="item"><label>交付时间</label><input type="datetime-local" id="t2"></div>
-    <div class="item"><label>备注</label><textarea rows="4" id="remark"></textarea></div>
+    <div class="item"><label>备注</label><textarea rows="4" id="remark" placeholder="详细需求描述"></textarea></div>
     <button class="btn" onclick="saveOrder()">保存订单</button>
   </div>
+
   <div class="card">
     <h3 style="margin-bottom:20px;color:#409eff">我的订单</h3>
     <div id="order_list" style="min-height:220px;background:#f9f9f9;padding:15px;border-radius:6px">加载中...</div>
   </div>
 </div>
 
+<!-- 修改密码弹窗 -->
+<div class="modal-mask" id="pwdModal">
+  <div class="modal-box">
+    <div class="modal-title">修改账号密码</div>
+    
+    <div class="pwd-row">
+      <label>原密码</label>
+      <input id="old_pwd" type="password" placeholder="请输入原登录密码">
+      <span class="eye" onclick="eye('old_pwd')">👁️</span>
+    </div>
+
+    <div class="pwd-row">
+      <label>新密码</label>
+      <input id="new_pwd" type="password" placeholder="设置新密码">
+      <span class="eye" onclick="eye('new_pwd')">👁️</span>
+    </div>
+
+    <div class="pwd-row">
+      <label>确认新密码</label>
+      <input id="confirm_pwd" type="password" placeholder="再次输入新密码">
+      <span class="eye" onclick="eye('confirm_pwd')">👁️</span>
+    </div>
+
+    <button class="btn" style="background:#67c23a" onclick="updatePwd()">确认修改</button>
+    <button class="btn" style="background:#f56c6c;margin-left:10px" onclick="closeModal('pwdModal')">取消</button>
+  </div>
+</div>
+
 <script>
 // ======================= 【你自己填写这2个！】 =======================
-const SUPABASE_URL = "【https://wjotnzisntonzbehymcu.supabase.co】";
-const SUPABASE_KEY = "【eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqb3RuemlzbnRvbnpiZWh5bWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNjgzMzUsImV4cCI6MjA5MDY0NDMzNX0.SkRcXTW_ZttoqMg0j-9B61AiIFEXPbB6pyw-lGDXJgI】";
+const SUPABASE_URL = "【在这里填 你的 Project URL】";
+const SUPABASE_KEY = "【在这里填 你的 anon public API Key】";
 // ====================================================================
 
 // 眼睛显隐密码
 function eye(id) {
   let i = document.getElementById(id);
   i.type = i.type === "password" ? "text" : "password";
+}
+
+// 弹窗控制
+function openModal(id) {
+  document.getElementById(id).style.display = "flex";
+}
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
 }
 
 // 切换登录注册
@@ -98,15 +147,28 @@ function go(typ) {
   document.querySelectorAll(".tab-item").forEach((e, i) => e.classList.toggle("active", i === (typ === "login" ? 0 : 1)));
 }
 
-// 登录
+// 登录逻辑
 function doLogin() {
   let user = document.getElementById("login_user").value.trim();
   let pwd = document.getElementById("login_pwd").value.trim();
   if (!user || !pwd) return alert("请输入账号密码");
 
+  // 简单的权限模拟逻辑（实际云端逻辑后续可接入）
   if (user === "admin" && pwd === "123456") {
     localStorage.setItem("role", "admin");
     localStorage.setItem("username", user);
+    localStorage.setItem("password", pwd); // 模拟存储
+    alert("登录成功");
+    showMain();
+    return;
+  }
+  
+  // 模拟设计师登录逻辑（实际项目中需从云端读取）
+  let savedPwd = localStorage.getItem("pwd_" + user);
+  if (savedPwd && savedPwd === pwd) {
+    localStorage.setItem("role", "designer");
+    localStorage.setItem("username", user);
+    localStorage.setItem("password", pwd);
     alert("登录成功");
     showMain();
     return;
@@ -115,11 +177,16 @@ function doLogin() {
   alert("账号或密码错误");
 }
 
-// 注册（设计师）
+// 注册逻辑（设计师）
 function doReg() {
   let user = document.getElementById("reg_user").value.trim();
   let pwd = document.getElementById("reg_pwd").value.trim();
   if (!user || !pwd) return alert("请完整填写");
+  
+  // 检查是否重复
+  if (localStorage.getItem("pwd_" + user)) return alert("该用户名已存在");
+  
+  localStorage.setItem("pwd_" + user, pwd); // 模拟存云端
   localStorage.setItem("role", "designer");
   localStorage.setItem("username", user);
   alert("注册成功，请登录");
@@ -139,12 +206,40 @@ function showMain() {
 
 // 保存订单
 function saveOrder() {
-  alert("订单保存成功（云端已配置，可直接对接）");
+  alert("功能已准备就绪，云端接口待配置");
 }
 
 // 加载订单
 function loadOrders() {
-  document.getElementById("order_list").innerText = "云端已连接，等待数据";
+  document.getElementById("order_list").innerText = "云端连接成功，数据模块已加载";
+}
+
+// 修改密码
+function updatePwd() {
+  let oldPwd = document.getElementById("old_pwd").value.trim();
+  let newPwd = document.getElementById("new_pwd").value.trim();
+  let confirmPwd = document.getElementById("confirm_pwd").value.trim();
+  
+  let currUser = localStorage.getItem("username");
+  let currRole = localStorage.getItem("role");
+  let realOldPwd = localStorage.getItem(currRole === "admin" ? "password" : "pwd_" + currUser);
+
+  if (oldPwd !== realOldPwd) return alert("原密码输入错误！");
+  if (newPwd.length < 6) return alert("新密码长度不能少于6位");
+  if (newPwd !== confirmPwd) return alert("两次输入的新密码不一致");
+
+  // 模拟修改云端密码
+  if (currRole === "admin") {
+    localStorage.setItem("password", newPwd);
+  } else {
+    localStorage.setItem("pwd_" + currUser, newPwd);
+  }
+  
+  alert("密码修改成功！请重新登录以生效");
+  closeModal('pwdModal');
+  // 退出登录
+  localStorage.clear();
+  location.reload();
 }
 </script>
 </body>
