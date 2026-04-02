@@ -10,16 +10,28 @@
     body{background:linear-gradient(135deg,#409eff,#6c5ce7);height:100vh;display:flex;align-items:center;justify-content:center}
     .box{background:white;width:380px;padding:40px;border-radius:16px;box-shadow:0 10px 40px #0000001a}
     .title{text-align:center;font-size:22px;margin-bottom:20px}
-    .item{margin-bottom:14px}
+    .item{margin-bottom:14px;position:relative;} /* 相对定位用于放小眼睛 */
     input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px}
-    .btn{width:100%;padding:12px;background:#409eff;color:white;border:none;border-radius:8px;margin-top:6px}
+    .btn{width:100%;padding:12px;background:#409eff;color:white;border:none;border-radius:8px;margin-top:6px;cursor:pointer;}
     .link{text-align:center;margin-top:10px;font-size:14px;color:#666}
     .link span{color:#409eff;cursor:pointer}
     .tab{display:flex;gap:10px;margin-bottom:16px}
-    .tab button{flex:1;padding:8px;border:none;background:#f1f1f1;border-radius:8px}
+    .tab button{flex:1;padding:8px;border:none;background:#f1f1f1;border-radius:8px;cursor:pointer;}
     .tab button.active{background:#409eff;color:white}
     .page{display:none}
     .page.active{display:block}
+    
+    /* 👁️ 小眼睛样式 */
+    .eye-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+        font-size: 18px;
+    }
+    .eye-icon:hover { color: #666; }
   </style>
 </head>
 <body>
@@ -33,31 +45,48 @@
     <button onclick="go(2)">找回密码</button>
   </div>
 
+  <!-- 登录页 -->
   <div class="page active" id="p0">
-    <div class="item"><input id="login_user" placeholder="账号"></div>
-    <div class="item"><input type="password" id="login_pwd" placeholder="密码"></div>
-    <button class="btn" onclick="toLogin()">登录</button>
+    <div class="item">
+      <input id="login_user" placeholder="请输入账号">
+    </div>
+    <div class="item">
+      <input type="password" id="login_pwd" placeholder="请输入密码">
+      <span class="eye-icon" onclick="togglePwd('login_pwd')">👁️</span>
+    </div>
+    <button class="btn" onclick="toLogin()">立即登录</button>
   </div>
 
+  <!-- 注册页 -->
   <div class="page" id="p1">
-    <div class="item"><input id="reg_user" placeholder="账号"></div>
-    <div class="item"><input type="password" id="reg_pwd" placeholder="密码"></div>
+    <div class="item"><input id="reg_user" placeholder="设置账号"></div>
+    <div class="item">
+      <input type="password" id="reg_pwd" placeholder="设置密码">
+      <span class="eye-icon" onclick="togglePwd('reg_pwd')">👁️</span>
+    </div>
     <div class="item">
       <select id="reg_question">
-        <option>你的小学名称？</option>
+        <option>你喜欢的食物？</option>
         <option>你的母亲姓名？</option>
         <option>你的生日？</option>
       </select>
     </div>
     <div class="item"><input id="reg_answer" placeholder="密保答案"></div>
-    <button class="btn" onclick="toReg()">注册</button>
+    <button class="btn" onclick="toReg()">完成注册</button>
   </div>
 
+  <!-- 找回密码页 -->
   <div class="page" id="p2">
     <div class="item"><input id="find_user" placeholder="输入账号"></div>
-    <div class="item"><label id="q_show"></label></div>
-    <div class="item"><input id="find_answer" placeholder="输入答案"></div>
-    <div class="item"><input type="password" id="new_pwd" placeholder="新密码"></div>
+    <div class="item"><label id="q_show" style="font-size:13px;color:#666;padding:10px;background:#f5f5f5;border-radius:6px;display:block;margin-bottom:5px;">请先输入账号并验证</label></div>
+    <div class="item">
+      <input type="password" id="find_answer" placeholder="密保答案">
+      <span class="eye-icon" onclick="togglePwd('find_answer')">👁️</span>
+    </div>
+    <div class="item">
+      <input type="password" id="new_pwd" placeholder="新密码">
+      <span class="eye-icon" onclick="togglePwd('new_pwd')">👁️</span>
+    </div>
     <button class="btn" onclick="toFind()">验证并重置</button>
   </div>
 
@@ -66,6 +95,8 @@
 <script src="cloud.js"></script>
 <script>
 let now = 0;
+
+// 1. 标签切换
 function go(i){
   now = i;
   document.querySelectorAll(".page").forEach((e,j)=>{
@@ -74,37 +105,84 @@ function go(i){
   document.querySelectorAll(".tab button").forEach((e,j)=>{
     e.classList.toggle("active", j===i);
   });
+  // 切换页面时清空输入
+  if(i===2) document.getElementById("q_show").innerText = "请先输入账号并验证";
 }
 
+// 2. 👁️ 密码显示/隐藏核心函数
+function togglePwd(inputId) {
+  const input = document.getElementById(inputId);
+  if(input.type === "password") {
+    input.type = "text";
+    document.querySelector(`[onclick="togglePwd('${inputId}')"]`).innerText = "🙈";
+  } else {
+    input.type = "password";
+    document.querySelector(`[onclick="togglePwd('${inputId}')"]`).innerText = "👁️";
+  }
+}
+
+// 3. 登录逻辑
 async function toLogin(){
   let u = document.getElementById("login_user").value;
   let p = document.getElementById("login_pwd").value;
+  if(!u || !p) { alert("请输入账号密码"); return; }
+  
+  // 👇 这里增加逻辑：如果是admin登录，走管理员验证（可保留原逻辑）
+  if(u === "admin" && p === "123456") {
+     localStorage.setItem("currentUser", u);
+     location.href="index.html";
+     return;
+  }
+  
+  // 普通用户登录
   let r = await login(u,p);
   if(r.ok) location.href="index.html";
-  else alert(r.msg);
+  else alert(r.msg || "登录失败");
 }
 
+// 4. 注册逻辑
 async function toReg(){
   let u = document.getElementById("reg_user").value;
   let p = document.getElementById("reg_pwd").value;
   let q = document.getElementById("reg_question").value;
   let a = document.getElementById("reg_answer").value;
+  
+  if(!u || !p) { alert("账号密码不能为空"); return; }
+  
   let r = await register(u,p,q,a);
-  alert(r.msg);
+  alert(r.msg || "注册成功");
   if(r.ok) go(0);
 }
 
+// 5. 找回密码逻辑
 async function toFind(){
   let u = document.getElementById("find_user").value;
   let a = document.getElementById("find_answer").value;
   let np = document.getElementById("new_pwd").value;
+  
+  if(!u || !a || !np) { alert("请填写完整信息"); return; }
+  
   let user = await findUser(u);
   if(!user){alert("账号不存在");return}
-  if(user.answer !== a){alert("答案错误");return}
+  if(user.answer !== a){alert("密保答案错误");return}
+  
   await resetPwd(u,np);
-  alert("重置成功");
+  alert("重置成功，请用新密码登录");
   go(0);
 }
+
+// 6. 监听找回密码账号输入，自动显示密保
+document.getElementById("find_user").addEventListener("input", async function(){
+  let u = this.value;
+  if(u.length < 2) return;
+  
+  let user = await findUser(u);
+  if(user) {
+    document.getElementById("q_show").innerText = `密保问题：${user.question}`;
+  } else {
+    document.getElementById("q_show").innerText = "该账号未注册";
+  }
+});
 </script>
 </body>
 </html>
