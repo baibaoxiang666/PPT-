@@ -1,76 +1,110 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPT接单系统 · 登录</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:"微软雅黑",sans-serif;}
-        body{
-            background:linear-gradient(135deg,#409eff,#6c5ce7);
-            height:100vh;display:flex;align-items:center;justify-content:center;
-        }
-        /* 登录卡片：圆角+柔阴影，好看不廉价 */
-        .登录卡片{
-            background:#fff;padding:45px;border-radius:16px;
-            box-shadow:0 8px 30px rgba(0,0,0,0.15);width:380px;
-        }
-        .标题{text-align:center;font-size:24px;color:#333;margin-bottom:35px;}
-        .输入框组{margin-bottom:20px;}
-        label{display:block;color:#666;margin-bottom:8px;font-size:14px;}
-        input{
-            width:100%;padding:13px 16px;border:1px solid #eee;
-            border-radius:8px;font-size:15px;transition:0.3s;
-        }
-        input:focus{border-color:#409eff;outline:none;}
-        .按钮区域{display:flex;gap:12px;margin-top:25px;}
-        .登录按钮{
-            flex:1;padding:13px;border:none;border-radius:8px;
-            background:#409eff;color:#fff;font-size:16px;cursor:pointer;
-        }
-        .注册按钮{
-            flex:1;padding:13px;border:none;border-radius:8px;
-            background:#f5f7fa;color:#333;font-size:16px;cursor:pointer;
-        }
-        .备注小字{text-align:center;margin-top:20px;font-size:12px;color:#999;}
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录</title>
+  <script src="https://qzonestyle.gtimg.cn/qzone/qzactStatics/configSystem/js/cloud/1.6.0/cloud.js"></script>
+  <style>
+    *{box-sizing:border-box;font-family:微软雅黑;margin:0;padding:0}
+    body{background:linear-gradient(135deg,#409eff,#6c5ce7);height:100vh;display:flex;align-items:center;justify-content:center}
+    .box{background:white;width:380px;padding:40px;border-radius:16px;box-shadow:0 10px 40px #0000001a}
+    .title{text-align:center;font-size:22px;margin-bottom:20px}
+    .item{margin-bottom:14px}
+    input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px}
+    .btn{width:100%;padding:12px;background:#409eff;color:white;border:none;border-radius:8px;margin-top:6px}
+    .link{text-align:center;margin-top:10px;font-size:14px;color:#666}
+    .link span{color:#409eff;cursor:pointer}
+    .tab{display:flex;gap:10px;margin-bottom:16px}
+    .tab button{flex:1;padding:8px;border:none;background:#f1f1f1;border-radius:8px}
+    .tab button.active{background:#409eff;color:white}
+    .page{display:none}
+    .page.active{display:block}
+  </style>
 </head>
 <body>
-    <div class="登录卡片">
-        <div class="标题">PPT接单管理系统</div>
 
-        <div class="输入框组">
-            <label>登录账号</label>
-            <input type="text" id="账号输入" placeholder="输自己的账号">
-        </div>
-        <div class="输入框组">
-            <label>登录密码</label>
-            <input type="password" id="密码输入" placeholder="输自己的密码">
-        </div>
+<div class="box">
+  <div class="title">PPT接单管理系统</div>
 
-        <div class="按钮区域">
-            <button class="登录按钮" onclick="执行登录()">立即登录</button>
-            <button class="注册按钮" onclick="执行注册()">账号注册</button>
-        </div>
+  <div class="tab">
+    <button class="active" onclick="go(0)">登录</button>
+    <button onclick="go(1)">注册</button>
+    <button onclick="go(2)">找回密码</button>
+  </div>
 
-        <div class="备注小字">管理员账号：admin｜密码：123456</div>
+  <div class="page active" id="p0">
+    <div class="item"><input id="login_user" placeholder="账号"></div>
+    <div class="item"><input type="password" id="login_pwd" placeholder="密码"></div>
+    <button class="btn" onclick="toLogin()">登录</button>
+  </div>
+
+  <div class="page" id="p1">
+    <div class="item"><input id="reg_user" placeholder="账号"></div>
+    <div class="item"><input type="password" id="reg_pwd" placeholder="密码"></div>
+    <div class="item">
+      <select id="reg_question">
+        <option>你的小学名称？</option>
+        <option>你的母亲姓名？</option>
+        <option>你的生日？</option>
+      </select>
     </div>
+    <div class="item"><input id="reg_answer" placeholder="密保答案"></div>
+    <button class="btn" onclick="toReg()">注册</button>
+  </div>
 
-    <script src="cloud.js"></script>
-    <script>
-        async function 执行登录(){
-            let 账号 = document.getElementById("账号输入").value;
-            let 密码 = document.getElementById("密码输入").value;
-            let 返回结果 = await login(账号,密码);
-            if(返回结果.成功){alert("登录成功！跳转后台");location.href="index.html";}
-            else{alert(返回结果.提示);}
-        }
-        async function 执行注册(){
-            let 账号 = document.getElementById("账号输入").value;
-            let 密码 = document.getElementById("密码输入").value;
-            let 返回结果 = await register(账号,密码);
-            alert(返回结果.提示);
-        }
-    </script>
+  <div class="page" id="p2">
+    <div class="item"><input id="find_user" placeholder="输入账号"></div>
+    <div class="item"><label id="q_show"></label></div>
+    <div class="item"><input id="find_answer" placeholder="输入答案"></div>
+    <div class="item"><input type="password" id="new_pwd" placeholder="新密码"></div>
+    <button class="btn" onclick="toFind()">验证并重置</button>
+  </div>
+
+</div>
+
+<script src="cloud.js"></script>
+<script>
+let now = 0;
+function go(i){
+  now = i;
+  document.querySelectorAll(".page").forEach((e,j)=>{
+    e.classList.toggle("active", j===i);
+  });
+  document.querySelectorAll(".tab button").forEach((e,j)=>{
+    e.classList.toggle("active", j===i);
+  });
+}
+
+async function toLogin(){
+  let u = document.getElementById("login_user").value;
+  let p = document.getElementById("login_pwd").value;
+  let r = await login(u,p);
+  if(r.ok) location.href="index.html";
+  else alert(r.msg);
+}
+
+async function toReg(){
+  let u = document.getElementById("reg_user").value;
+  let p = document.getElementById("reg_pwd").value;
+  let q = document.getElementById("reg_question").value;
+  let a = document.getElementById("reg_answer").value;
+  let r = await register(u,p,q,a);
+  alert(r.msg);
+  if(r.ok) go(0);
+}
+
+async function toFind(){
+  let u = document.getElementById("find_user").value;
+  let a = document.getElementById("find_answer").value;
+  let np = document.getElementById("new_pwd").value;
+  let user = await findUser(u);
+  if(!user){alert("账号不存在");return}
+  if(user.answer !== a){alert("答案错误");return}
+  await resetPwd(u,np);
+  alert("重置成功");
+  go(0);
+}
+</script>
 </body>
 </html>
