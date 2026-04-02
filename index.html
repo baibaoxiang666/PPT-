@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPT接单管理系统｜统一权限版</title>
+<title>PPT接单管理系统｜权限审核完整版</title>
 <style>
 * {margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑,system-ui}
-body {background:#f5f7fa;color:#333}
+body {background:#f5f7fa;color:#333;line-height:1.6}
+/* 通用优化：防卡顿、交互顺滑 */
+button,input,select {transition: all 0.2s ease;outline:none}
+button:active {opacity:0.9}
 
 /* 登录注册 */
 .auth-box {max-width:420px;margin:80px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
@@ -15,27 +18,33 @@ body {background:#f5f7fa;color:#333}
 .tab-item {flex:1;text-align:center;padding:12px 0;color:#666;cursor:pointer}
 .tab-item.active {color:#1989fa;border-bottom:2px solid #1989fa}
 .input-row {margin-bottom:16px;position:relative}
-.input-row input, .input-row select {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px;background:#fff}
+.input-row input, .input-row select,textarea {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px;background:#fff;resize:none}
 .eye-icon {position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999}
 .btn {width:100%;padding:13px;background:#1989fa;color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;margin-top:8px}
+.btn-warn {background:#ff7d00}
+.btn-success {background:#67c23a}
 .tip-text {font-size:13px;color:#999;margin-top:15px;text-align:center}
 .find-pwd {color:#1989fa;cursor:pointer}
 
-/* 后台布局 */
-.admin-layout {display:none;min-height:100vh}
-.top-nav {background:#fff;padding:16px 24px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+/* 布局 */
+.layout {display:none;min-height:100vh}
+.top-nav {background:#fff;padding:16px 24px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
 .user-info {font-size:15px}
 .nav-btn {padding:8px 14px;margin-left:10px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px}
 .nav-btn.exit {color:#f56c6c;border-color:#f56c6c}
 
-.main-content {padding:24px}
-.card {background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.main {padding:24px}
+.card {background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-bottom:20px}
 .card-title {font-size:16px;font-weight:500;margin-bottom:18px;color:#333;border-left:4px solid #1989fa;padding-left:10px}
-.empty-data {text-align:center;padding:60px 0;color:#999;font-size:14px}
+.empty {text-align:center;padding:40px;color:#999}
+.order-item {padding:15px;border:1px solid #eee;border-radius:6px;margin-bottom:10px}
+.audit-tag {display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:8px}
+.tag-pending {background:#fff3e0;color:#e6a23c}
+.tag-pass {background:#f0f9ff;color:#1989fa}
 
 /* 弹窗 */
-.modal-mask {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
-.modal-box {background:#fff;padding:25px;border-radius:10px;width:90%;max-width:380px}
+.mask {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+.modal {background:#fff;padding:25px;border-radius:10px;width:90%;max-width:420px;max-height:80vh;overflow-y:auto}
 .modal-title {font-size:18px;margin-bottom:20px;text-align:center}
 .modal-btn {display:flex;gap:10px;margin-top:20px}
 .modal-btn button {flex:1;padding:11px;border-radius:6px;border:none;cursor:pointer}
@@ -47,202 +56,401 @@ body {background:#f5f7fa;color:#333}
 
 <!-- 登录注册 -->
 <div class="auth-box" id="authPage">
-    <div class="auth-title">接单管理系统</div>
+    <div class="auth-title">接单管理系统｜权限版</div>
     <div class="tab-wrap">
-        <div class="tab-item active" onclick="switchTab('login')">登录</div>
-        <div class="tab-item" onclick="switchTab('reg')">注册</div>
+        <div class="tab-item active" onclick="tab('login')">登录</div>
+        <div class="tab-item" onclick="tab('reg')">注册</div>
     </div>
 
-    <!-- 登录 -->
     <div id="loginForm">
         <div class="input-row"><input type="text" id="loginUser" placeholder="用户名"></div>
         <div class="input-row">
             <input type="password" id="loginPwd" placeholder="密码">
-            <span class="eye-icon" onclick="togglePwd('loginPwd')">👁️</span>
+            <span class="eye-icon" onclick="showPwd('loginPwd')">👁️</span>
         </div>
         <button class="btn" onclick="login()">登录</button>
         <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">找回密码</span></div>
-        <div class="tip-text">管理员默认：admin / 123456</div>
+        <div class="tip-text">超级管理员：admin / 123456</div>
     </div>
 
-    <!-- 注册（含密保） -->
     <div id="regForm" style="display:none">
-        <div class="input-row"><input type="text" id="regUser" placeholder="用户名"></div>
+        <div class="input-row"><input type="text" id="regUser" placeholder="注册用户名"></div>
         <div class="input-row">
-            <input type="password" id="regPwd" placeholder="密码">
-            <span class="eye-icon" onclick="togglePwd('regPwd')">👁️</span>
+            <input type="password" id="regPwd" placeholder="设置密码">
+            <span class="eye-icon" onclick="showPwd('regPwd')">👁️</span>
         </div>
         <div class="input-row">
-            <select id="safeQuestion">
-                <option value="">请选择密保问题</option>
-                <option value="母校">你的母校名称？</option>
-                <option value="宠物">第一只宠物名字？</option>
-                <option value="手机号">常用手机号后4位？</option>
+            <select id="safeQ">
+                <option value="">选择密保问题</option>
+                <option value="school">母校名称</option>
+                <option value="pet">第一只宠物名字</option>
+                <option value="phone">手机号后4位</option>
             </select>
         </div>
-        <div class="input-row"><input type="text" id="safeAnswer" placeholder="密保答案"></div>
-        <button class="btn" onclick="register()">注册</button>
+        <div class="input-row"><input type="text" id="safeA" placeholder="密保答案"></div>
+        <button class="btn" onclick="register()">完成注册</button>
+        <div class="tip-text">注册默认：普通设计师权限</div>
     </div>
 </div>
 
-<!-- 管理员后台（极简） -->
-<div class="admin-layout" id="adminPage">
+<!-- 超级管理员后台 -->
+<div class="layout" id="adminPage">
     <div class="top-nav">
-        <div class="user-info">欢迎你，<span id="adminName"></span></div>
+        <div class="user-info">超级管理员｜<span id="adminName"></span></div>
+        <div>
+            <button class="nav-btn" onclick="openModal('roleModal')">权限管理</button>
+            <button class="nav-btn" onclick="openModal('auditListModal')">审核申请</button>
+            <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
+            <button class="nav-btn exit" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+    <div class="main">
+        <div class="card">
+            <div class="card-title">全量订单总览（超级管理员可见）</div>
+            <div id="adminAllOrder" class="empty">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<!-- 二级管理员后台 -->
+<div class="layout" id="subAdminPage">
+    <div class="top-nav">
+        <div class="user-info">二级管理员｜<span id="subAdminName"></span></div>
         <div>
             <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
             <button class="nav-btn exit" onclick="logout()">退出登录</button>
         </div>
     </div>
-    <div class="main-content">
+    <div class="main">
         <div class="card">
-            <div class="card-title">接单记录台账</div>
-            <div class="empty-data">暂无订单数据</div>
+            <div class="card-title">全量订单查看（可提交修改审核）</div>
+            <div id="subAllOrder" class="empty">加载中...</div>
         </div>
     </div>
 </div>
 
+<!-- 普通设计师后台 -->
+<div class="layout" id="designerPage">
+    <div class="top-nav">
+        <div class="user-info">设计师｜<span id="designerName"></span></div>
+        <div>
+            <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
+            <button class="nav-btn exit" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+    <div class="main">
+        <div class="card">
+            <div class="card-title">录入个人订单</div>
+            <div class="input-row"><input type="text" id="cus" placeholder="客户姓名"></div>
+            <div class="input-row"><input type="text" id="money" placeholder="订单金额"></div>
+            <div class="input-row"><input type="text" id="page" placeholder="订单页数"></div>
+            <div class="input-row"><textarea id="remark" placeholder="订单备注"></textarea></div>
+            <button class="btn" onclick="addDesignerOrder()">保存订单</button>
+        </div>
+        <div class="card">
+            <div class="card-title">我的订单（仅自己可见）</div>
+            <div id="myOrder" class="empty">暂无个人订单</div>
+        </div>
+    </div>
+</div>
+
+<!-- 弹窗合集 -->
+<!-- 权限授予弹窗 -->
+<div class="mask" id="roleModal">
+    <div class="modal">
+        <div class="modal-title">给用户授予二级管理员权限</div>
+        <div class="input-row"><input type="text" id="grantUser" placeholder="输入要授权的用户名"></div>
+        <button class="btn btn-warn" onclick="grantSubAdmin()">确认授予权限</button>
+        <button class="btn btn-cancel" style="margin-top:10px" onclick="closeModal('roleModal')">关闭</button>
+    </div>
+</div>
+
+<!-- 审核列表弹窗 -->
+<div class="mask" id="auditListModal">
+    <div class="modal">
+        <div class="modal-title">待审核修改申请</div>
+        <div id="auditContent" class="empty">暂无待审核申请</div>
+        <button class="btn btn-cancel" style="margin-top:10px" onclick="closeModal('auditListModal')">关闭</button>
+    </div>
+</div>
+
+<!-- 二级管理员提交修改弹窗 -->
+<div class="mask" id="editApplyModal">
+    <div class="modal">
+        <div class="modal-title">提交订单修改申请</div>
+        <div class="input-row"><input type="text" id="editOrderId" placeholder="订单编号" readonly></div>
+        <div class="input-row"><input type="text" id="newCus" placeholder="新客户名称"></div>
+        <div class="input-row"><input type="text" id="newMoney" placeholder="新金额"></div>
+        <div class="input-row"><textarea id="newRemark" placeholder="修改备注说明"></textarea></div>
+        <button class="btn btn-warn" onclick="submitAuditApply()">提交审核</button>
+        <button class="btn btn-cancel" style="margin-top:10px" onclick="closeModal('editApplyModal')">取消</button>
+    </div>
+</div>
+
 <!-- 找回密码弹窗 -->
-<div class="modal-mask" id="findModal">
-    <div class="modal-box">
-        <div class="modal-title">找回密码</div>
-        <div class="input-row"><input type="text" id="findUser" placeholder="用户名"></div>
-        <div class="input-row"><input type="text" id="findAnswer" placeholder="密保答案"></div>
-        <div class="input-row"><input type="password" id="newFindPwd" placeholder="新密码"></div>
+<div class="mask" id="findModal">
+    <div class="modal">
+        <div class="modal-title">密保找回密码</div>
+        <div class="input-row"><input type="text" id="findU" placeholder="用户名"></div>
+        <div class="input-row"><input type="text" id="findA" placeholder="密保答案"></div>
+        <div class="input-row"><input type="password" id="findNewPwd" placeholder="新密码"></div>
         <div class="modal-btn">
             <button class="btn-cancel" onclick="closeModal('findModal')">取消</button>
-            <button class="btn-confirm" onclick="resetPwd()">重置</button>
+            <button class="btn-confirm" onclick="resetPwd()">确认重置</button>
         </div>
     </div>
 </div>
 
 <!-- 修改密码弹窗 -->
-<div class="modal-mask" id="editPwdModal">
-    <div class="modal-box">
-        <div class="modal-title">修改密码</div>
+<div class="mask" id="editPwdModal">
+    <div class="modal">
+        <div class="modal-title">修改个人密码</div>
         <div class="input-row"><input type="password" id="oldPwd" placeholder="原密码"></div>
         <div class="input-row"><input type="password" id="newPwd" placeholder="新密码"></div>
         <div class="modal-btn">
             <button class="btn-cancel" onclick="closeModal('editPwdModal')">取消</button>
-            <button class="btn-confirm" onclick="doChangePwd()">确认修改</button>
+            <button class="btn-confirm" onclick="userChangePwd()">确认修改</button>
         </div>
     </div>
 </div>
 
 <script>
-// ==========================
-// 管理员统一规则（你要的最终版）
-// ==========================
-const ADMIN_USER = "admin";
-const DEFAULT_PWD = "123456";
+// 基础常量初始化
+const ADMIN_ACCOUNT = "admin";
+const DEFAULT_INIT_PWD = "123456";
 
-// 初始化管理员（第一次自动创建）
-if (!localStorage.getItem("pwd_admin")) {
-    localStorage.setItem("pwd_admin", DEFAULT_PWD);
-    localStorage.setItem("safeQ_admin", "管理员默认密保");
-    localStorage.setItem("safeA_admin", "admin");
+// 初始化超级管理员数据
+if(!localStorage.getItem("pwd_"+ADMIN_ACCOUNT)){
+    localStorage.setItem("pwd_"+ADMIN_ACCOUNT,DEFAULT_INIT_PWD);
+    localStorage.setItem("safeA_"+ADMIN_ACCOUNT,"admin");
 }
+// 初始化审核、订单存储空数组
+if(!localStorage.getItem("auditList")) localStorage.setItem("auditList",JSON.stringify([]));
+if(!localStorage.getItem("allOrder")) localStorage.setItem("allOrder",JSON.stringify([]));
 
-// 切换标签
-function switchTab(t) {
-    document.querySelectorAll(".tab-item")[0].classList.toggle("active", t === "login");
-    document.querySelectorAll(".tab-item")[1].classList.toggle("active", t === "reg");
-    document.getElementById("loginForm").style.display = t === "login" ? "block" : "none";
-    document.getElementById("regForm").style.display = t === "reg" ? "block" : "none";
+// 基础交互函数
+function tab(t){
+    document.getElementById("loginForm").style.display = t==="login"?"block":"none";
+    document.getElementById("regForm").style.display = t==="reg"?"block":"none";
+    document.querySelectorAll(".tab-item")[0].classList.toggle("active",t==="login");
+    document.querySelectorAll(".tab-item")[1].classList.toggle("active",t==="reg");
 }
-
-// 密码显隐
-function togglePwd(id) {
-    let i = document.getElementById(id);
-    i.type = i.type === "password" ? "text" : "password";
+function showPwd(id){
+    let el = document.getElementById(id);
+    el.type = el.type==="password"?"text":"password";
 }
-
-// 弹窗
-function openModal(id) { document.getElementById(id).style.display = "flex" }
-function closeModal(id) { document.getElementById(id).style.display = "none" }
-
-// 退出登录（硬性保留）
-function logout() {
-    if (confirm("确定退出？")) {
-        localStorage.clear();
+function openModal(id){document.getElementById(id).style.display="flex"}
+function closeModal(id){document.getElementById(id).style.display="none"}
+function logout(){
+    if(confirm("确定退出当前账号吗？")){
+        localStorage.removeItem("currentLogin");
         location.reload();
     }
 }
 
-// 登录
-function login() {
-    let user = document.getElementById("loginUser").value.trim();
-    let pwd = document.getElementById("loginPwd").value.trim();
-    if (!user || !pwd) return alert("请填写完整");
+// 账号登录&权限判断
+function login(){
+    let u = document.getElementById("loginUser").value.trim();
+    let p = document.getElementById("loginPwd").value.trim();
+    if(!u||!p) return alert("请填写完整账号密码");
+    let realPwd = localStorage.getItem("pwd_"+u);
+    if(!realPwd||realPwd!==p) return alert("账号或密码错误");
 
-    let realPwd = localStorage.getItem("pwd_" + user);
-    if (realPwd && realPwd === pwd) {
-        localStorage.setItem("username", user);
-        showAdmin();
-        return;
+    localStorage.setItem("currentLogin",u);
+    // 超级管理员
+    if(u===ADMIN_ACCOUNT){
+        document.getElementById("authPage").style.display="none";
+        document.getElementById("adminPage").style.display="block";
+        document.getElementById("adminName").innerText=u;
+        loadAdminAllOrder();loadAuditList();
     }
-    alert("账号或密码错误");
+    // 二级管理员
+    else if(localStorage.getItem("subAdmin_"+u)){
+        document.getElementById("authPage").style.display="none";
+        document.getElementById("subAdminPage").style.display="block";
+        document.getElementById("subAdminName").innerText=u;
+        loadSubAdminOrder();
+    }
+    // 普通设计师
+    else{
+        document.getElementById("authPage").style.display="none";
+        document.getElementById("designerPage").style.display="block";
+        document.getElementById("designerName").innerText=u;
+        loadDesignerMyOrder();
+    }
 }
 
-// 注册
-function register() {
+// 注册（默认普通设计师）
+function register(){
     let u = document.getElementById("regUser").value.trim();
     let p = document.getElementById("regPwd").value.trim();
-    let q = document.getElementById("safeQuestion").value;
-    let a = document.getElementById("safeAnswer").value.trim();
-    if (!u || !p || !q || !a) return alert("所有项必填");
-    if (localStorage.getItem("pwd_" + u)) return alert("用户名已存在");
+    let q = document.getElementById("safeQ").value;
+    let a = document.getElementById("safeA").value.trim();
+    if(!u||!p||!q||!a) return alert("用户名、密码、密保全部必填");
+    if(localStorage.getItem("pwd_"+u)) return alert("该用户名已存在");
 
-    localStorage.setItem("pwd_" + u, p);
-    localStorage.setItem("safeQ_" + u, q);
-    localStorage.setItem("safeA_" + u, a);
-    alert("注册成功！");
-    switchTab("login");
+    localStorage.setItem("pwd_"+u,p);
+    localStorage.setItem("safeA_"+u,a);
+    alert("注册成功！默认设计师权限，请登录");
+    tab("login");
 }
 
-// 找回密码（管理员也能用）
-function resetPwd() {
-    let u = document.getElementById("findUser").value.trim();
-    let a = document.getElementById("findAnswer").value.trim();
-    let newP = document.getElementById("newFindPwd").value.trim();
-    if (!u || !a || !newP) return alert("请填写完整");
+// 超级管理员：授予二级管理员权限
+function grantSubAdmin(){
+    let targetU = document.getElementById("grantUser").value.trim();
+    if(!targetU) return alert("请输入用户名");
+    if(!localStorage.getItem("pwd_"+targetU)) return alert("该用户未注册");
+    if(targetU===ADMIN_ACCOUNT) return alert("无法修改超级管理员权限");
 
-    let realA = localStorage.getItem("safeA_" + u);
-    if (!realA) return alert("用户不存在");
-    if (realA !== a) return alert("密保答案错误");
-
-    localStorage.setItem("pwd_" + u, newP);
-    alert("密码重置成功！");
-    closeModal("findModal");
+    localStorage.setItem("subAdmin_"+targetU,"yes");
+    alert("二级管理员权限授予成功！对方重新登录生效");
+    closeModal("roleModal");
 }
 
-// 修改密码（管理员也能用）
-function doChangePwd() {
-    let user = localStorage.getItem("username");
+// 订单相关-设计师新增个人订单
+function addDesignerOrder(){
+    let user = localStorage.getItem("currentLogin");
+    let order = {
+        id:Date.now(),creator:user,
+        cus:document.getElementById("cus").value,
+        money:document.getElementById("money").value,
+        page:document.getElementById("page").value,
+        remark:document.getElementById("remark").value,
+        time:new Date().toLocaleString()
+    };
+    let all = JSON.parse(localStorage.getItem("allOrder"));
+    all.push(order);
+    localStorage.setItem("allOrder",JSON.stringify(all));
+    alert("订单保存成功");
+    loadDesignerMyOrder();
+    document.getElementById("cus").value=document.getElementById("money").value=document.getElementById("page").value=document.getElementById("remark").value="";
+}
+
+// 二级管理员：提交修改审核
+function submitAuditApply(){
+    let applyUser = localStorage.getItem("currentLogin");
+    let audit = {
+        orderId:document.getElementById("editOrderId").value,
+        applyUser:applyUser,
+        newCus:document.getElementById("newCus").value,
+        newMoney:document.getElementById("newMoney").value,
+        newRemark:document.getElementById("newRemark").value,
+        status:"pending",applyTime:new Date().toLocaleString()
+    };
+    let auditList = JSON.parse(localStorage.getItem("auditList"));
+    auditList.push(audit);
+    localStorage.setItem("auditList",JSON.stringify(auditList));
+    alert("修改申请已提交，等待超级管理员审核");
+    closeModal("editApplyModal");
+}
+
+// 超级管理员：审核通过生效
+function passAudit(index){
+    let auditList = JSON.parse(localStorage.getItem("auditList"));
+    let apply = auditList[index];
+    let allOrder = JSON.parse(localStorage.getItem("allOrder"));
+    // 正式修改订单数据
+    allOrder.forEach(item=>{
+        if(item.id==apply.orderId){
+            item.cus=apply.newCus;item.money=apply.newMoney;item.remark=apply.newRemark;
+        }
+    });
+    localStorage.setItem("allOrder",JSON.stringify(allOrder));
+    auditList[index].status="pass";
+    localStorage.setItem("auditList",JSON.stringify(auditList));
+    alert("审核通过，订单已更新");
+    loadAuditList();loadAdminAllOrder();
+}
+
+// 数据渲染加载（优化流畅不卡顿）
+function loadAdminAllOrder(){
+    let all = JSON.parse(localStorage.getItem("allOrder"));
+    let html = all.length?"":'<div class="empty">暂无订单数据</div>';
+    all.forEach(item=>{
+        html += `
+        <div class="order-item">
+            <div>订单ID：${item.id} | 创建人：${item.creator}</div>
+            <div>客户：${item.cus} | 金额：${item.money} | 页数：${item.page}</div>
+            <div>备注：${item.remark} | 时间：${item.time}</div>
+        </div>`;
+    });
+    document.getElementById("adminAllOrder").innerHTML=html;
+}
+function loadSubAdminOrder(){
+    let all = JSON.parse(localStorage.getItem("allOrder"));
+    let html = all.length?"":'<div class="empty">暂无订单数据</div>';
+    all.forEach(item=>{
+        html += `
+        <div class="order-item">
+            <div>订单ID：${item.id} | 创建人：${item.creator}</div>
+            <div>客户：${item.cus} | 金额：${item.money} | 页数：${item.page}</div>
+            <div>备注：${item.remark}</div>
+            <button class="btn btn-warn" style="margin-top:8px" onclick="openEditApply(${item.id})">提交修改审核</button>
+        </div>`;
+    });
+    document.getElementById("subAllOrder").innerHTML=html;
+}
+function loadDesignerMyOrder(){
+    let user = localStorage.getItem("currentLogin");
+    let all = JSON.parse(localStorage.getItem("allOrder"));
+    let my = all.filter(item=>item.creator===user);
+    let html = my.length?"":'<div class="empty">暂无个人订单</div>';
+    my.forEach(item=>{
+        html += `
+        <div class="order-item">
+            <div>金额：${item.money} | 页数：${item.page}</div>
+            <div>备注：${item.remark} | 提交时间：${item.time}</div>
+        </div>`;
+    });
+    document.getElementById("myOrder").innerHTML=html;
+}
+function loadAuditList(){
+    let audit = JSON.parse(localStorage.getItem("auditList"));
+    let html = audit.length?"":'<div class="empty">暂无待审核申请</div>';
+    audit.forEach((item,idx)=>{
+        let tag = item.status==="pending"?`<span class="audit-tag tag-pending">待审核</span>`:`<span class="audit-tag tag-pass">已通过</span>`;
+        html += `
+        <div class="order-item">
+            <div>申请人：${item.applyUser} ${tag}</div>
+            <div>订单ID：${item.orderId}</div>
+            <div>修改内容：${item.newCus} | ${item.newMoney}</div>
+            ${item.status==="pending"?`<button class="btn btn-success" style="margin-top:8px" onclick="passAudit(${idx})">审核通过</button>`:""}
+        </div>`;
+    });
+    document.getElementById("auditContent").innerHTML=html;
+}
+
+// 二级管理员打开修改申请弹窗
+function openEditApply(id){
+    document.getElementById("editOrderId").value=id;
+    openModal("editApplyModal");
+}
+
+// 密码通用：找回+修改
+function resetPwd(){
+    let u = document.getElementById("findU").value.trim();
+    let a = document.getElementById("findA").value.trim();
+    let newP = document.getElementById("findNewPwd").value.trim();
+    if(!u||!a||!newP) return alert("全部信息必填");
+    if(localStorage.getItem("safeA_"+u)!==a) return alert("密保答案错误");
+    localStorage.setItem("pwd_"+u,newP);
+    alert("密码重置成功！");closeModal("findModal");
+}
+function userChangePwd(){
+    let u = localStorage.getItem("currentLogin");
     let old = document.getElementById("oldPwd").value.trim();
     let newP = document.getElementById("newPwd").value.trim();
-
-    let realOld = localStorage.getItem("pwd_" + user);
-    if (old !== realOld) return alert("原密码错误");
-    if (newP.length < 6) return alert("密码至少6位");
-
-    localStorage.setItem("pwd_" + user, newP);
-    alert("修改成功！请重新登录");
-    closeModal("editPwdModal");
-    logout();
+    if(localStorage.getItem("pwd_"+u)!==old) return alert("原密码错误");
+    localStorage.setItem("pwd_"+u,newP);
+    alert("密码修改成功，请重新登录");
+    closeModal("editPwdModal");logout();
 }
 
-// 进入后台
-function showAdmin() {
-    document.getElementById("authPage").style.display = "none";
-    document.getElementById("adminPage").style.display = "block";
-    document.getElementById("adminName").innerText = localStorage.getItem("username");
+// 自动回填登录状态
+window.onload=function(){
+    let loginUser = localStorage.getItem("currentLogin");
+    if(loginUser) login();
 }
-
-// 自动登录
-window.onload = () => {
-    if (localStorage.getItem("username")) showAdmin();
-};
 </script>
 </body>
 </html>
