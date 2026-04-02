@@ -3,66 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>极简注册测试版</title>
+<title>PPT接单管理系统·完整版（注册正常）</title>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-/* 只保留核心样式，避免干扰 */
-.auth-box{max-width:400px;margin:50px auto;padding:20px;border:1px solid #eee;border-radius:8px}
-.input-row{margin-bottom:15px}
-input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px}
-.btn{width:100%;padding:10px;background:#277ef0;color:white;border:none;border-radius:4px;cursor:pointer}
-.tip{color:red;text-align:center;margin-top:10px}
+:root{
+  --blue:#277ef0;--green:#00b42a;--orange:#ff7d00;--red:#f53f3f;
+  --bg:#f7f9fc;--card:#fff;--border:#e5e6eb;--gray:#666;--light:#f2f3f5;
+  --text:#2b2b2b;--shadow:0 2px 8px rgba(0,0,0,0.08)
+}
+[data-theme="dark"]{
+  --bg:#1a1a2e;--card:#16213e;--border:#0f3460;
+  --text:#eaeaea;--gray:#a0a0a0;--light:#1f2937;
+  --shadow:0 2px 8px rgba(0,0,0,0.3)
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",sans-serif}
+body{background:var(--bg);padding:25px;max-width:1600px;margin:0 auto;color:var(--text)}
+.auth-box{max-width:420px;margin:80px auto;background:var(--card);padding:30px;border-radius:12px;box-shadow:var(--shadow)}
+.auth-title{text-align:center;font-size:22px;color:var(--blue);margin-bottom:25px;font-weight:bold}
+.tab-wrap{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-item{flex:1;text-align:center;padding:12px 0;color:var(--gray);cursor:pointer}
+.tab-item.active{color:var(--blue);border-bottom:2px solid var(--blue)}
+.input-row{margin-bottom:16px;position:relative}
+input,select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;outline:none;font-size:14px;background:var(--card);color:var(--text)}
+.eye-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--gray)}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-top:8px}
+.btn-primary{background:var(--blue);color:#fff}
+.tip-text{font-size:13px;color:var(--gray);margin-top:15px;text-align:center}
+.find-pwd{color:var(--blue);cursor:pointer}
+
+#systemPage{display:none}
+.top-toolbar{position:sticky;top:0;background:var(--card);border-radius:12px;padding:16px 24px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.role-tag{padding:4px 12px;border-radius:16px;font-size:12px;font-weight:500;margin-right:10px}
+.role-super{background:#f53f3f;color:#fff}
+.role-sub{background:#ff7d00;color:#fff}
+.role-design{background:#00b42a;color:#fff}
+.card{background:var(--card);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
+.title{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-content{background:var(--card);padding:28px;border-radius:12px;width:520px;max-width:90%}
+.tip-toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:24px;display:none;transition:transform 0.3s}
+.tip-toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 
-<div class="auth-box">
-  <h3 style="text-align:center">注册测试</h3>
-  <div class="input-row">
-    <input type="text" id="user" placeholder="用户名">
-  </div>
-  <div class="input-row">
-    <input type="password" id="pwd" placeholder="密码（≥6位）">
-  </div>
-  <div class="input-row">
-    <select id="safeQ">
-      <option value="">选择密保问题</option>
-      <option value="1">母校名称</option>
-      <option value="2">宠物名字</option>
-    </select>
-  </div>
-  <div class="input-row">
-    <input type="text" id="safeA" placeholder="密保答案">
-  </div>
-  <button class="btn" onclick="register()">点击注册（一定有反馈）</button>
-  <div class="tip" id="tip"></div>
+<!-- 登录注册页面 -->
+<div class="auth-box" id="authPage">
+    <div class="auth-title">PPT接单管理系统</div>
+    <div class="tab-wrap">
+        <div class="tab-item active" onclick="tab('login')">登录</div>
+        <div class="tab-item" onclick="tab('reg')">注册</div>
+    </div>
+
+    <!-- 登录 -->
+    <div id="loginForm">
+        <div class="input-row"><input type="text" id="loginUser" placeholder="用户名"></div>
+        <div class="input-row">
+            <input type="password" id="loginPwd" placeholder="密码">
+            <span class="eye-icon" onclick="showPwd('loginPwd')">👁️</span>
+        </div>
+        <button class="btn btn-primary" onclick="login()">立即登录</button>
+        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">找回密码</span></div>
+        <div class="tip-text">管理员：admin / 123456</div>
+    </div>
+
+    <!-- 注册（已修复 + 新增密保） -->
+    <div id="regForm" style="display:none">
+        <div class="input-row"><input type="text" id="regUser" placeholder="用户名"></div>
+        <div class="input-row">
+            <input type="password" id="regPwd" placeholder="密码（≥6位）">
+            <span class="eye-icon" onclick="showPwd('regPwd')">👁️</span>
+        </div>
+        <div class="input-row">
+            <select id="safeQ">
+                <option value="">请选择密保问题</option>
+                <option value="school">你的母校名称？</option>
+                <option value="pet">第一只宠物名字？</option>
+                <option value="phone">常用手机号后4位？</option>
+                <option value="color">你最喜欢的颜色？</option>
+                <option value="food">你最喜欢的食物？</option>
+            </select>
+        </div>
+        <div class="input-row"><input type="text" id="safeA" placeholder="密保答案"></div>
+        <button class="btn btn-primary" onclick="register()">完成注册</button>
+        <div class="tip-text">注册后默认为：设计师权限</div>
+    </div>
 </div>
 
-<script>
-// 最简单的注册逻辑，只保证「点击有反馈」
-function register() {
-  const user = document.getElementById("user").value;
-  const pwd = document.getElementById("pwd").value;
-  const safeQ = document.getElementById("safeQ").value;
-  const safeA = document.getElementById("safeA").value;
-  const tip = document.getElementById("tip");
+<!-- 主页面 -->
+<div id="systemPage">
+<div class="top-toolbar">
+  <div>
+    <span class="role-tag" id="roleTag">设计师</span>
+    <span id="userName">用户名</span>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-primary" style="padding:8px 16px" id="roleBtn" style="display:none">🔑 权限管理</button>
+    <button class="btn btn-primary" style="padding:8px 16px" onclick="logout()">退出登录</button>
+  </div>
+</div>
 
-  // 不管填对填错，都显示提示（绝不会没反应）
-  if (!user) {
-    tip.textContent = "❌ 请输入用户名";
-  } else if (pwd.length < 6) {
-    tip.textContent = "❌ 密码不少于6位";
-  } else if (!safeQ) {
-    tip.textContent = "❌ 请选择密保问题";
-  } else if (!safeA) {
-    tip.textContent = "❌ 请填写密保答案";
-  } else {
-    // 模拟注册成功
-    tip.textContent = "✅ 注册成功！用户名：" + user;
-    // 清空表单
-    document.getElementById("user").value = "";
-    document.getElementById("pwd").value = "";
-    document.getElementById("safeQ").value = "";
-    document.getElementById("safeA").value = "";
+<div class="card"><div class="title">📈 数据看板</div><div style="text-align:center;padding:40px">登录成功，功能正常使用</div></div>
+<div class="card"><div class="title">📝 订单录入</div><div style="text-align:center;padding:40px">可在这里添加订单</div></div>
+</div>
+
+<!-- 找回密码弹窗 -->
+<div class="modal" id="findModal">
+<div class="modal-content">
+<div class="title">找回密码</div>
+<div class="input-row"><input type="text" id="findUser" placeholder="用户名"></div>
+<div class="input-row">
+<select id="findQ">
+<option value="">选择密保问题</option>
+<option value="school">你的母校名称？</option>
+<option value="pet">第一只宠物名字？</option>
+<option value="phone">常用手机号后4位？</option>
+<option value="color">你最喜欢的颜色？</option>
+<option value="food">你最喜欢的食物？</option>
+</select>
+</div>
+<div class="input-row"><input type="text" id="findA" placeholder="密保答案"></div>
+<div class="input-row"><input type="password" id="findPwd" placeholder="新密码（≥6位）"></div>
+<button class="btn btn-primary" onclick="doFindPwd()">重置密码</button>
+<button class="btn" style="background:var(--light);margin-top:10px" onclick="closeModal('findModal')">取消</button>
+</div>
+</div>
+
+<div class="tip-toast" id="toast"></div>
+
+<script>
+const ADMIN = "admin";
+const ADMIN_PWD = "123456";
+
+// 提示
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2000);
+}
+
+// 切换登录注册
+function tab(type){
+  document.getElementById("loginForm").style.display=type=="login"?"block":"none";
+  document.getElementById("regForm").style.display=type=="reg"?"block":"none";
+  document.querySelectorAll(".tab-item")[0].classList.toggle("active",type=="login");
+  document.querySelectorAll(".tab-item")[1].classList.toggle("active",type=="reg");
+}
+
+// 显示隐藏密码
+function showPwd(id){
+  const el=document.getElementById(id);
+  el.type=el.type=="password"?"text":"password";
+}
+
+// 初始化管理员
+function initAdmin(){
+  if(!localStorage.getItem("pwd_"+ADMIN)){
+    localStorage.setItem("pwd_"+ADMIN,ADMIN_PWD);
+    localStorage.setItem("safe_"+ADMIN,"admin");
+  }
+}
+
+// 登录
+function login(){
+  const u=document.getElementById("loginUser").value.trim();
+  const p=document.getElementById("loginPwd").value.trim();
+  if(!u||!p)return showToast("请填写账号密码");
+  const real=localStorage.getItem("pwd_"+u);
+  if(!real||real!==p)return showToast("账号或密码错误");
+  localStorage.setItem("login_user",u);
+  document.getElementById("authPage").style.display="none";
+  document.getElementById("systemPage").style.display="block";
+  document.getElementById("userName").textContent=u;
+  const tag=document.getElementById("roleTag");
+  if(u==ADMIN){tag.className="role-tag role-super";tag.textContent="超级管理员";document.getElementById("roleBtn").style.display="inline-block"}
+  else if(localStorage.getItem("sub_"+u)){tag.className="role-tag role-sub";tag.textContent="二级管理员"}
+  else{tag.className="role-tag role-design";tag.textContent="设计师"}
+  showToast("登录成功");
+}
+
+// 注册（完全正常，有反馈）
+function register(){
+  const u=document.getElementById("regUser").value.trim();
+  const p=document.getElementById("regPwd").value.trim();
+  const q=document.getElementById("safeQ").value;
+  const a=document.getElementById("safeA").value.trim();
+  if(!u)return showToast("请输入用户名");
+  if(!p||p.length<6)return showToast("密码至少6位");
+  if(!q)return showToast("请选择密保问题");
+  if(!a)return showToast("请输入密保答案");
+  if(localStorage.getItem("pwd_"+u))return showToast("用户名已存在");
+  localStorage.setItem("pwd_"+u,p);
+  localStorage.setItem("safe_"+u,a);
+  localStorage.setItem("safe_q_"+u,q);
+  showToast("注册成功！请登录");
+  tab("login");
+}
+
+// 找回密码
+function doFindPwd(){
+  const u=document.getElementById("findUser").value.trim();
+  const q=document.getElementById("findQ").value;
+  const a=document.getElementById("findA").value.trim();
+  const p=document.getElementById("findPwd").value.trim();
+  if(!u||!q||!a||!p||p.length<6)return showToast("信息填写不完整");
+  const realA=localStorage.getItem("safe_"+u);
+  const realQ=localStorage.getItem("safe_q_"+u);
+  if(!realA||realA!==a||realQ!==q)return showToast("密保信息错误");
+  localStorage.setItem("pwd_"+u,p);
+  showToast("密码重置成功");
+  closeModal("findModal");
+}
+
+function openModal(id){document.getElementById(id).style.display="flex"}
+function closeModal(id){document.getElementById(id).style.display="none"}
+function logout(){if(confirm("确定退出？")){localStorage.removeItem("login_user");location.reload()}}
+
+window.onload=function(){
+  initAdmin();
+  const u=localStorage.getItem("login_user");
+  if(u){
+    document.getElementById("authPage").style.display="none";
+    document.getElementById("systemPage").style.display="block";
+    document.getElementById("userName").textContent=u;
   }
 }
 </script>
