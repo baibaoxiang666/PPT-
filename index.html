@@ -1,34 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>我的订单</title>
+    <title>我的订单 - 管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        .user-info {
+            color: #666;
+        }
+        .order-list {
+            margin-top: 20px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f9fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .order-info h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .order-info p {
+            color: #666;
+            font-size: 14px;
+        }
+        .order-status {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: white;
+            background: #52c41a;
+        }
+        .empty-tip {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+    </style>
 </head>
 <body>
-    <h1>我的订单</h1>
-    <div id="orderList"></div>
+    <div class="container">
+        <div class="header">
+            <h1>我的订单</h1>
+            <div class="user-info">当前用户：<span id="currentUser"></span></div>
+        </div>
+        <div class="order-list" id="orderList"></div>
+    </div>
 
-    <script src="cloud.js"></script>
+    <script src="./config.js"></script>
+    <script src="./cloud.js"></script>
     <script>
+        // 校验登录状态
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            alert("请先登录！");
+            window.location.href = "./login.html";
+        } else {
+            document.getElementById("currentUser").innerText = currentUser;
+        }
+
+        // 渲染订单列表
         async function renderOrders() {
-            const orderListEl = document.getElementById('orderList');
-            const list = await getOrders();
-            let html = '';
-            if (list.length === 0) {
-                html = '<p>暂无订单</p>';
-            } else {
-                list.forEach(o => {
-                    html += `<div>
-                        <strong>${o.title || '无标题'}</strong>
-                        - 金额：${o.money || 0}元
-                        - 用户：${o.user}
-                        - 时间：${o.time}
-                    </div>`;
-                });
+            const orders = await getOrders();
+            const orderListEl = document.getElementById("orderList");
+
+            if (!orders || orders.length === 0) {
+                orderListEl.innerHTML = `
+                    <div class="empty-tip">暂无订单记录</div>
+                `;
+                return;
             }
+
+            let html = "";
+            orders.forEach(order => {
+                html += `
+                    <div class="order-item">
+                        <div class="order-info">
+                            <h3>${order.title || "未命名订单"}</h3>
+                            <p>金额：${order.amount || 0} 元 | 创建时间：${new Date(order.createdAt).toLocaleString()}</p>
+                        </div>
+                        <span class="order-status">已完成</span>
+                    </div>
+                `;
+            });
             orderListEl.innerHTML = html;
         }
-        renderOrders();
+
+        // 页面加载时渲染
+        window.onload = function () {
+            renderOrders();
+        };
     </script>
 </body>
 </html>
