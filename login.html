@@ -95,15 +95,29 @@ function go(i){
 
 function togglePwd(inputId) {
   const i = document.getElementById(inputId);
-  if(i.type==="password"){i.type="text"; document.querySelector(`[onclick="togglePwd('${inputId}')"]`).innerText="🙈";}
-  else{i.type="password"; document.querySelector(`[onclick="togglePwd('${inputId}')"]`).innerText="👁️";}
+  if(i.type==="password"){
+    i.type="text";
+    document.querySelector(`[onclick="togglePwd('${inputId}')"]`).innerText="🙈";
+  }else{
+    i.type="password";
+    document.querySelector(`[onclick="togglePwd('${inputId}')"]`).innerText="👁️";
+  }
 }
 
 async function toLogin(){
   let u = document.getElementById("login_user").value;
   let p = document.getElementById("login_pwd").value;
+
+  // ✅ 管理员登录（页面不显示，只保留功能）
+  if(u === "admin" && p === "123456"){
+    localStorage.setItem("currentUser", u);
+    location.href = "index.html";
+    return;
+  }
+
   let r = await login(u,p);
-  if(r.ok) location.href="index.html"; else alert(r.msg);
+  if(r.ok) location.href="index.html";
+  else alert(r.msg);
 }
 
 async function toReg(){
