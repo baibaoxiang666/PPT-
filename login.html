@@ -104,11 +104,11 @@ function togglePwd(inputId) {
   }
 }
 
+// 登录（保留管理员）
 async function toLogin(){
-  let u = document.getElementById("login_user").value;
-  let p = document.getElementById("login_pwd").value;
+  let u = document.getElementById("login_user").value.trim();
+  let p = document.getElementById("login_pwd").value.trim();
 
-  // ✅ 管理员登录（页面不显示，只保留功能）
   if(u === "admin" && p === "123456"){
     localStorage.setItem("currentUser", u);
     location.href = "index.html";
@@ -120,30 +120,46 @@ async function toLogin(){
   else alert(r.msg);
 }
 
+// ✅ 修复注册点击无反应
 async function toReg(){
-  let u = document.getElementById("reg_user").value;
-  let p = document.getElementById("reg_pwd").value;
+  let u = document.getElementById("reg_user").value.trim();
+  let p = document.getElementById("reg_pwd").value.trim();
   let q = document.getElementById("reg_question").value;
-  let a = document.getElementById("reg_answer").value;
+  let a = document.getElementById("reg_answer").value.trim();
+
+  if(!u || !p || !a){
+    alert("请填写完整信息：账号、密码、密保答案");
+    return;
+  }
+
   let r = await register(u,p,q,a);
   alert(r.msg);
   if(r.ok) go(0);
 }
 
+// 找回密码
 async function toFind(){
-  let u = document.getElementById("find_user").value;
-  let a = document.getElementById("find_answer").value;
-  let np = document.getElementById("new_pwd").value;
+  let u = document.getElementById("find_user").value.trim();
+  let a = document.getElementById("find_answer").value.trim();
+  let np = document.getElementById("new_pwd").value.trim();
+
+  if(!u || !a || !np){
+    alert("请填写完整信息");
+    return;
+  }
+
   let user = await findUser(u);
   if(!user){alert("账号不存在");return}
-  if(user.answer!==a){alert("答案错误");return}
+  if(user.answer !== a){alert("答案错误");return}
+
   await resetPwd(u,np);
   alert("重置成功");
   go(0);
 }
 
 document.getElementById("find_user").addEventListener("input",async ()=>{
-  let u = document.getElementById("find_user").value;
+  let u = document.getElementById("find_user").value.trim();
+  if(!u) return;
   let user = await findUser(u);
   if(user) document.getElementById("q_show").innerText = "密保："+user.question;
   else document.getElementById("q_show").innerText = "账号未注册";
