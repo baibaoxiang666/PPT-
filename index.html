@@ -3,454 +3,1119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPT接单管理系统｜权限审核完整版</title>
+<title>PPT接单管理系统·权限版 v3.0</title>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-* {margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑,system-ui}
-body {background:#f5f7fa;color:#333;line-height:1.6}
-/* 通用优化：防卡顿、交互顺滑 */
-button,input,select {transition: all 0.2s ease;outline:none}
-button:active {opacity:0.9}
-
-/* 登录注册 */
-.auth-box {max-width:420px;margin:80px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
-.auth-title {text-align:center;font-size:22px;color:#1989fa;margin-bottom:25px;font-weight:bold}
-.tab-wrap {display:flex;border-bottom:1px solid #eee;margin-bottom:20px}
-.tab-item {flex:1;text-align:center;padding:12px 0;color:#666;cursor:pointer}
-.tab-item.active {color:#1989fa;border-bottom:2px solid #1989fa}
+:root{
+  --blue:#277ef0;--green:#00b42a;--orange:#ff7d00;--red:#f53f3f;
+  --bg:#f7f9fc;--card:#fff;--border:#e5e6eb;--gray:#666;--light:#f2f3f5;
+  --text:#2b2b2b;--shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+/* 深色模式 */
+[data-theme="dark"]{
+  --bg:#1a1a2e;--card:#16213e;--border:#0f3460;
+  --text:#eaeaea;--gray:#a0a0a0;--light:#1f2937;
+  --shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",-apple-system,sans-serif}
+body{background:var(--bg);padding:25px;max-width:1600px;margin:0 auto;color:var(--text);transition:background 0.3s}
+/* 顶部工具栏-新增权限标识 */
+.top-toolbar{
+  position:sticky;top:0;background:var(--card);border-radius:12px;padding:16px 24px;
+  margin-bottom:20px;box-shadow:var(--shadow);z-index:100;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.toolbar-left,.toolbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* 权限标签 */
+.role-tag{padding:4px 12px;border-radius:16px;font-size:12px;font-weight:500;margin-right:10px}
+.role-super{background:#f53f3f;color:#fff}
+.role-sub{background:#ff7d00;color:#fff}
+.role-design{background:#00b42a;color:#fff}
+/* 通用卡片 */
+.card{background:var(--card);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);transition:all 0.3s}
+.title{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:14px}
+.item{display:flex;flex-direction:column;gap:6px;min-width:140px;flex:1}
+label{font-size:13px;color:var(--gray);font-weight:500}
+input,textarea,select{
+  width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;
+  outline:none;font-size:14px;background:var(--card);color:var(--text);
+  transition:all 0.2s
+}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(39,126,240,0.1)}
+input[readonly]{background:var(--light);opacity:0.8}
+#pasteArea{height:100px;resize:none;font-family:monospace}
+button{cursor:pointer;border:none;border-radius:8px;padding:10px 18px;font-size:14px;transition:all 0.2s}
+button:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+button:active{transform:translateY(0)}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-warning{background:var(--orange);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+.btn-default{background:var(--light);color:var(--text);border:1px solid var(--border)}
+.btn-icon{padding:8px;font-size:16px}
+/* 进度按钮 */
+.p25{background:#3b8aff;color:#fff}
+.p50{background:#ff9500;color:#fff}
+.p75{background:#b969d7;color:#fff}
+.p100{background:#00c853;color:#fff}
+.progress-box{width:100%;height:8px;background:var(--light);border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-bar{height:100%;transition:all .3s ease-out}
+/* 搜索栏 */
+.search-bar{
+  position:relative;margin-bottom:16px
+}
+.search-bar input{padding-left:40px}
+.search-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--gray);font-size:16px
+}
+/* 筛选标签 */
+.filter-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.filter-tag{
+  padding:6px 12px;background:var(--light);border-radius:16px;
+  font-size:12px;cursor:pointer;transition:all 0.2s;border:1px solid transparent
+}
+.filter-tag.active{background:var(--blue);color:#fff}
+.filter-tag:hover{border-color:var(--blue)}
+/* 表格优化 */
+.table-container{max-height:500px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid var(--border);padding:12px;text-align:center;position:relative}
+th{background:var(--light);position:sticky;top:0;font-weight:600;z-index:10}
+tr:hover{background:var(--light)}
+/* 状态徽章 */
+.status-badge{
+  display:inline-block;padding:4px 12px;border-radius:16px;
+  font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s
+}
+.status-pending{background:#fff2f0;color:var(--red)}
+.status-abnormal{background:#fff7e6;color:var(--orange)}
+.status-completed{background:#f6ffed;color:var(--green)}
+.audit-pending{background:#fff2f0;color:var(--red);font-size:12px;padding:2px 8px;border-radius:8px}
+.audit-pass{background:#f6ffed;color:var(--green);font-size:12px;padding:2px 8px;border-radius:8px}
+/* 操作按钮 */
+.action-btn{
+  padding:6px 12px;font-size:12px;border-radius:6px;
+  margin:0 4px;cursor:pointer;transition:all 0.2s
+}
+/* 分页 */
+.pagination{
+  display:flex;justify-content:center;align-items:center;gap:12px;
+  margin-top:16px;padding:16px
+}
+.page-info{color:var(--gray);font-size:13px}
+.page-btns{display:flex;gap:8px}
+.page-btn{
+  padding:6px 12px;border-radius:6px;background:var(--light);
+  cursor:pointer;transition:all 0.2s;border:1px solid var(--border)
+}
+.page-btn:hover{border-color:var(--blue)}
+.page-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* 统计卡片 */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin:16px 0}
+.stat-card{
+  background:linear-gradient(135deg,var(--light) 0%,var(--card) 100%);
+  padding:16px;border-radius:10px;text-align:center;
+  transition:all 0.3s;cursor:pointer;border:1px solid transparent
+}
+.stat-card:hover{border-color:var(--blue);transform:translateY(-2px)}
+.stat-card h4{font-size:13px;color:var(--gray);margin-bottom:8px}
+.stat-card .num{font-size:24px;font-weight:bold;color:var(--blue);font-family:'Courier New',monospace}
+.stat-card .trend{font-size:11px;margin-top:4px}
+/* 图表 */
+.chart-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:24px;margin-top:24px}
+.chart-item{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--border)}
+.chart-item label{display:block;margin-bottom:12px;font-weight:600;color:var(--gray);font-size:14px}
+.chart-container{position:relative;height:220px;width:100%}
+/* 模态框-新增权限/审核弹窗 */
+.modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.4);display:none;align-items:center;
+  justify-content:center;z-index:1000;backdrop-filter:blur(4px)
+}
+.modal-content{
+  background:var(--card);padding:28px;border-radius:12px;
+  width:520px;max-width:90%;max-height:85vh;
+  overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.2);
+  animation:modalIn 0.3s ease-out
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+/* Toast提示 */
+.tip-toast{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;border-radius:24px;
+  display:none;z-index:2000;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  transition:transform 0.3s ease-out
+}
+.tip-toast.show{transform:translateX(-50%) translateY(0)}
+/* 快捷键提示 */
+.shortcut-hint{
+  position:fixed;top:10px;right:10px;background:var(--card);
+  padding:12px 16px;border-radius:8px;font-size:12px;
+  box-shadow:var(--shadow);opacity:0;transition:opacity 0.3s;
+  z-index:999
+}
+.shortcut-hint.show{opacity:1}
+/* 空状态 */
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--gray);
+  background:var(--light);border-radius:12px;margin:16px 0
+}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.5}
+/* 加载状态 */
+.loading{opacity:0.5;pointer-events:none;position:relative}
+.loading::after{
+  content:'';position:absolute;top:50%;left:50%;
+  width:40px;height:40px;margin:-20px 0 0 -20px;
+  border:3px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin 0.8s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 响应式 */
+@media(max-width:768px){
+  body{padding:15px}
+  .top-toolbar{flex-direction:column;align-items:stretch}
+  .toolbar-left,.toolbar-right{justify-content:center}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .row{flex-direction:column}
+  .chart-box{grid-template-columns:1fr}
+  table{font-size:12px}
+  th,td{padding:8px 6px}
+  .role-tag{margin-right:0;margin-bottom:8px}
+}
+/* 无障碍 */
+@media(prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important}
+}
+/* 打印样式 */
+@media print{
+  .top-toolbar,.modal,.tip-toast,.shortcut-hint{display:none !important}
+  body{padding:0;max-width:none}
+  .card{box-shadow:none;border:1px solid #ddd}
+}
+/* 登录注册页面样式 */
+.auth-box {max-width:420px;margin:80px auto;background:var(--card);padding:30px;border-radius:12px;box-shadow:var(--shadow)}
+.auth-title {text-align:center;font-size:22px;color:var(--blue);margin-bottom:25px;font-weight:bold}
+.tab-wrap {display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-item {flex:1;text-align:center;padding:12px 0;color:var(--gray);cursor:pointer}
+.tab-item.active {color:var(--blue);border-bottom:2px solid var(--blue);font-weight:500}
 .input-row {margin-bottom:16px;position:relative}
-.input-row input, .input-row select,textarea {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px;background:#fff;resize:none}
-.eye-icon {position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999}
-.btn {width:100%;padding:13px;background:#1989fa;color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;margin-top:8px}
-.btn-warn {background:#ff7d00}
-.btn-success {background:#67c23a}
-.tip-text {font-size:13px;color:#999;margin-top:15px;text-align:center}
-.find-pwd {color:#1989fa;cursor:pointer}
-
-/* 布局 */
-.layout {display:none;min-height:100vh}
-.top-nav {background:#fff;padding:16px 24px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
-.user-info {font-size:15px}
-.nav-btn {padding:8px 14px;margin-left:10px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px}
-.nav-btn.exit {color:#f56c6c;border-color:#f56c6c}
-
-.main {padding:24px}
-.card {background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-bottom:20px}
-.card-title {font-size:16px;font-weight:500;margin-bottom:18px;color:#333;border-left:4px solid #1989fa;padding-left:10px}
-.empty {text-align:center;padding:40px;color:#999}
-.order-item {padding:15px;border:1px solid #eee;border-radius:6px;margin-bottom:10px}
-.audit-tag {display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:8px}
-.tag-pending {background:#fff3e0;color:#e6a23c}
-.tag-pass {background:#f0f9ff;color:#1989fa}
-
-/* 弹窗 */
-.mask {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
-.modal {background:#fff;padding:25px;border-radius:10px;width:90%;max-width:420px;max-height:80vh;overflow-y:auto}
-.modal-title {font-size:18px;margin-bottom:20px;text-align:center}
-.modal-btn {display:flex;gap:10px;margin-top:20px}
-.modal-btn button {flex:1;padding:11px;border-radius:6px;border:none;cursor:pointer}
-.btn-confirm {background:#1989fa;color:#fff}
-.btn-cancel {background:#eee;color:#333}
+.eye-icon {position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--gray)}
+.tip-text {font-size:13px;color:var(--gray);margin-top:15px;text-align:center}
+.find-pwd {color:var(--blue);cursor:pointer}
 </style>
 </head>
 <body>
-
-<!-- 登录注册 -->
+<!-- 登录注册页面-权限版 -->
 <div class="auth-box" id="authPage">
-    <div class="auth-title">接单管理系统｜权限版</div>
+    <div class="auth-title">PPT接单管理系统·权限版</div>
     <div class="tab-wrap">
         <div class="tab-item active" onclick="tab('login')">登录</div>
         <div class="tab-item" onclick="tab('reg')">注册</div>
     </div>
 
     <div id="loginForm">
-        <div class="input-row"><input type="text" id="loginUser" placeholder="用户名"></div>
+        <div class="input-row"><input type="text" id="loginUser" placeholder="请输入用户名"></div>
         <div class="input-row">
-            <input type="password" id="loginPwd" placeholder="密码">
+            <input type="password" id="loginPwd" placeholder="请输入密码">
             <span class="eye-icon" onclick="showPwd('loginPwd')">👁️</span>
         </div>
-        <button class="btn" onclick="login()">登录</button>
-        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">找回密码</span></div>
-        <div class="tip-text">超级管理员：admin / 123456</div>
+        <button class="btn btn-primary" onclick="login()">立即登录</button>
+        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">点击找回</span></div>
+        <div class="tip-text">超级管理员默认：admin / 123456</div>
     </div>
 
     <div id="regForm" style="display:none">
-        <div class="input-row"><input type="text" id="regUser" placeholder="注册用户名"></div>
+        <div class="input-row"><input type="text" id="regUser" placeholder="设置注册用户名"></div>
         <div class="input-row">
-            <input type="password" id="regPwd" placeholder="设置密码">
+            <input type="password" id="regPwd" placeholder="设置登录密码">
             <span class="eye-icon" onclick="showPwd('regPwd')">👁️</span>
         </div>
         <div class="input-row">
             <select id="safeQ">
-                <option value="">选择密保问题</option>
-                <option value="school">母校名称</option>
-                <option value="pet">第一只宠物名字</option>
-                <option value="phone">手机号后4位</option>
+                <option value="">请选择密保问题</option>
+                <option value="school">你的母校名称？</option>
+                <option value="pet">第一只宠物名字？</option>
+                <option value="phone">常用手机号后4位？</option>
             </select>
         </div>
-        <div class="input-row"><input type="text" id="safeA" placeholder="密保答案"></div>
-        <button class="btn" onclick="register()">完成注册</button>
-        <div class="tip-text">注册默认：普通设计师权限</div>
+        <div class="input-row"><input type="text" id="safeA" placeholder="请输入密保答案（牢记）"></div>
+        <button class="btn btn-primary" onclick="register()">完成注册</button>
+        <div class="tip-text">注册默认：设计师权限 | 仅管理个人订单</div>
     </div>
 </div>
 
-<!-- 超级管理员后台 -->
-<div class="layout" id="adminPage">
-    <div class="top-nav">
-        <div class="user-info">超级管理员｜<span id="adminName"></span></div>
-        <div>
-            <button class="nav-btn" onclick="openModal('roleModal')">权限管理</button>
-            <button class="nav-btn" onclick="openModal('auditListModal')">审核申请</button>
-            <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
-            <button class="nav-btn exit" onclick="logout()">退出登录</button>
-        </div>
-    </div>
-    <div class="main">
-        <div class="card">
-            <div class="card-title">全量订单总览（超级管理员可见）</div>
-            <div id="adminAllOrder" class="empty">加载中...</div>
-        </div>
-    </div>
+<!-- 系统主页面-所有角色可见统一面板 -->
+<div id="systemPage" style="display:none">
+<!-- 顶部工具栏-新增权限标识+权限管理/审核入口（仅管理员可见） -->
+<div class="top-toolbar">
+  <div class="toolbar-left">
+    <span class="role-tag" id="roleTag">设计师</span>
+    <span id="userName">用户名</span>
+    <button class="btn-primary" onclick="refreshAll()" title="刷新统计（Ctrl+R）">📊 刷新统计</button>
+    <button class="btn-success" onclick="exportSelected()" title="导出选中订单">📥 导出选中</button>
+    <button class="btn-default" onclick="exportAllBackup()" title="备份所有数据">💾 备份</button>
+    <button class="btn-default" onclick="importBackup()" title="恢复备份数据">📤 恢复</button>
+    <button class="btn-default" onclick="showShortcuts()" title="查看快捷键">⌨️ 快捷键</button>
+  </div>
+  <div class="toolbar-right">
+    <!-- 权限管理+审核入口-仅超级管理员可见 -->
+    <button class="btn-warning" id="roleManageBtn" style="display:none" onclick="openModal('roleModal')">🔑 权限管理</button>
+    <button class="btn-warning" id="auditListBtn" style="display:none" onclick="openModal('auditListModal')">📝 审核申请</button>
+    <!-- 通用功能 -->
+    <button class="btn-default" onclick="toggleTheme()" title="切换主题（Ctrl+D）" id="themeBtn">🌙 深色</button>
+    <button class="btn-primary" onclick="openChannelModal()">🏪 渠道管理</button>
+    <button class="btn-success" onclick="batchSet('已结算')">✅ 已结算</button>
+    <button class="btn-warning" onclick="batchSet('异常')">⚠️ 异常</button>
+    <button class="btn-danger" onclick="batchSet('待结算')">⏳ 待结算</button>
+    <button class="btn-default exit" onclick="logout()">🚪 退出登录</button>
+  </div>
 </div>
 
-<!-- 二级管理员后台 -->
-<div class="layout" id="subAdminPage">
-    <div class="top-nav">
-        <div class="user-info">二级管理员｜<span id="subAdminName"></span></div>
-        <div>
-            <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
-            <button class="nav-btn exit" onclick="logout()">退出登录</button>
-        </div>
+<!-- 数据看板-所有角色可见（数据范围按权限隔离） -->
+<div class="card">
+  <div class="title">
+    <span>📈 数据看板</span>
+    <div>
+      <button class="btn-default" onclick="setCountMode(0)" id="countMode0">⏱️ 激进</button>
+      <button class="btn-default" onclick="setCountMode(1)" id="countMode1">📅 温和</button>
+      <button class="btn-default" onclick="setCountMode(2)" id="countMode2">🔕 静默</button>
     </div>
-    <div class="main">
-        <div class="card">
-            <div class="card-title">全量订单查看（可提交修改审核）</div>
-            <div id="subAllOrder" class="empty">加载中...</div>
-        </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card" onclick="filterByStatus('all')">
+      <h4>📦 总订单</h4>
+      <div class="num" id="totalOrder">0</div>
+      <div class="trend" id="orderTrend">-</div>
     </div>
+    <div class="stat-card" onclick="filterByStatus('all')">
+      <h4>💰 总金额</h4>
+      <div class="num" id="totalMoney">¥0.00</div>
+      <div class="trend" id="moneyTrend">-</div>
+    </div>
+    <div class="stat-card" onclick="filterByStatus('all')">
+      <h4>💵 总收益</h4>
+      <div class="num" id="totalFinal">¥0.00</div>
+      <div class="trend" id="finalTrend">-</div>
+    </div>
+    <div class="stat-card">
+      <h4>⏰ 平均耗时</h4>
+      <div class="num" id="avgTime">0h</div>
+    </div>
+    <div class="stat-card">
+      <h4>💼 时薪</h4>
+      <div class="num" id="avgHour">¥0.00</div>
+    </div>
+    <div class="stat-card" onclick="filterByStatus('pending')">
+      <h4>⏳ 未完成</h4>
+      <div class="num" id="undone">0</div>
+    </div>
+  </div>
+  
+  <div class="chart-box">
+    <div class="chart-item">
+      <label>📊 订单趋势</label>
+      <div class="chart-container"><canvas id="chartCount"></canvas></div>
+    </div>
+    <div class="chart-item">
+      <label>💵 收入趋势</label>
+      <div class="chart-container"><canvas id="chartMoney"></canvas></div>
+    </div>
+  </div>
+  
+  <div id="aiTips" style="padding:12px;text-align:center;color:var(--gray);font-size:13px"></div>
 </div>
 
-<!-- 普通设计师后台 -->
-<div class="layout" id="designerPage">
-    <div class="top-nav">
-        <div class="user-info">设计师｜<span id="designerName"></span></div>
-        <div>
-            <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
-            <button class="nav-btn exit" onclick="logout()">退出登录</button>
-        </div>
+<!-- 订单录入-所有角色可见（仅保存个人订单） -->
+<div class="card">
+  <div class="title">
+    <span>📝 订单录入（智能识别）</span>
+    <span style="font-size:12px;color:var(--gray)">支持格式：24页/24P | 600元/¥600</span>
+  </div>
+  <textarea id="pasteArea" placeholder="粘贴订单信息，自动识别页数、价格、渠道&#10;示例1：24页 精美美化静态 明天晚上要 原价600&#10;示例2：32P PPT设计 闲鱼下单 800元 团队3人"></textarea>
+  
+  <div class="row">
+    <div class="item" style="flex:2"><label>快捷渠道</label><div id="channelBtns" class="filter-tags"></div></div>
+  </div>
+  
+  <div class="row">
+    <div class="item"><label>渠道 *</label><input id="channel" placeholder="选择或输入" required></div>
+    <div class="item"><label>群ID</label><input id="group" placeholder="客户群编号"></div>
+    <div class="item"><label>原价（元）*</label><input id="price" type="number" min="0" placeholder="自动识别" required></div>
+    <div class="item"><label>页数 *</label><input id="page" type="number" min="1" placeholder="自动识别" required></div>
+  </div>
+  <div class="row">
+    <div class="item"><label>接单人</label><input id="user" placeholder="您的名字" readonly></div>
+    <div class="item"><label>成员（逗号分隔）</label><input id="member" placeholder="团队协作成员"></div>
+    <div class="item"><label>备注</label><input id="remark" placeholder="特殊要求或备注"></div>
+  </div>
+  <div class="row">
+    <div class="item"><label>接单时间</label><input type="datetime-local" id="timeOrder"></div>
+    <div class="item"><label>期望交付</label><input type="datetime-local" id="timeHope"></div>
+    <div class="item"><label>实际交付</label><input type="datetime-local" id="timeReal"></div>
+  </div>
+  <div class="row">
+    <div class="item" style="flex:1">
+      <label>进度</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="p25" onclick="setProgress(25)">25%</button>
+        <button class="p50" onclick="setProgress(50)">50%</button>
+        <button class="p75" onclick="setProgress(75)">75%</button>
+        <button class="p100" onclick="setProgress(100)">100%</button>
+        <button class="btn-success" onclick="fillRealTime()">✅ 完成</button>
+      </div>
+      <div class="progress-box"><div class="progress-bar" id="pro"></div></div>
     </div>
-    <div class="main">
-        <div class="card">
-            <div class="card-title">录入个人订单</div>
-            <div class="input-row"><input type="text" id="cus" placeholder="客户姓名"></div>
-            <div class="input-row"><input type="text" id="money" placeholder="订单金额"></div>
-            <div class="input-row"><input type="text" id="page" placeholder="订单页数"></div>
-            <div class="input-row"><textarea id="remark" placeholder="订单备注"></textarea></div>
-            <button class="btn" onclick="addDesignerOrder()">保存订单</button>
-        </div>
-        <div class="card">
-            <div class="card-title">我的订单（仅自己可见）</div>
-            <div id="myOrder" class="empty">暂无个人订单</div>
-        </div>
-    </div>
+  </div>
+  <div class="row">
+    <button class="btn-success" onclick="calc()">🧮 计算收益</button>
+    <button class="btn-primary" onclick="save()" id="saveBtn">💾 保存订单 (Ctrl+S)</button>
+    <button class="btn-default" onclick="clearForm()">🗑️ 清空</button>
+    <button class="btn-default" onclick="saveDraft()">📋 暂存草稿</button>
+  </div>
 </div>
 
-<!-- 弹窗合集 -->
-<!-- 权限授予弹窗 -->
-<div class="mask" id="roleModal">
-    <div class="modal">
-        <div class="modal-title">给用户授予二级管理员权限</div>
-        <div class="input-row"><input type="text" id="grantUser" placeholder="输入要授权的用户名"></div>
-        <button class="btn btn-warn" onclick="grantSubAdmin()">确认授予权限</button>
-        <button class="btn btn-cancel" style="margin-top:10px" onclick="closeModal('roleModal')">关闭</button>
-    </div>
+<!-- 结算预览-所有角色可见 -->
+<div class="card">
+  <div class="title">💰 结算预览</div>
+  <div class="row">
+    <div class="item"><label>分成比例</label><input id="rate" readonly></div>
+    <div class="item"><label>单页到手（元）</label><input id="pagePrice" readonly></div>
+    <div class="item"><label>总收益（元）</label><input id="totalPrice" readonly></div>
+  </div>
 </div>
 
-<!-- 审核列表弹窗 -->
-<div class="mask" id="auditListModal">
-    <div class="modal">
-        <div class="modal-title">待审核修改申请</div>
-        <div id="auditContent" class="empty">暂无待审核申请</div>
-        <button class="btn btn-cancel" style="margin-top:10px" onclick="closeModal('auditListModal')">关闭</button>
+<!-- 订单列表-所有角色可见（数据范围按权限隔离，操作权限隔离） -->
+<div class="card">
+  <div class="title">
+    <span>📋 订单列表</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn-default btn-icon" onclick="reverseCheck()" title="反选">🔃</button>
+      <button class="btn-default btn-icon" onclick="clearCheck()" title="清空选择">❌</button>
     </div>
+  </div>
+  
+  <!-- 搜索和过滤 -->
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索渠道、备注、接单人..." oninput="handleSearch()">
+  </div>
+  
+  <div class="filter-tags">
+    <div class="filter-tag active" onclick="switchTab(this,'all')">全部</div>
+    <div class="filter-tag" onclick="switchTab(this,'leader')">领队单</div>
+    <div class="filter-tag" onclick="switchTab(this,'team')">团队单</div>
+    <div class="filter-tag" onclick="switchTab(this,'pro25')">25%</div>
+    <div class="filter-tag" onclick="switchTab(this,'pro50')">50%</div>
+    <div class="filter-tag" onclick="switchTab(this,'pro75')">75%</div>
+    <div class="filter-tag" onclick="switchTab(this,'pro100')">100%</div>
+    <div class="filter-tag" onclick="switchTab(this,'pending')">待结算</div>
+    <div class="filter-tag" onclick="switchTab(this,'abnormal')">异常</div>
+    <div class="filter-tag" onclick="switchTab(this,'completed')">已结算</div>
+  </div>
+  
+  <!-- 表格容器 -->
+  <div class="table-container" id="tableContainer">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="allCheck" onchange="checkAll()"></th>
+          <th>渠道</th>
+          <th>金额</th>
+          <th>页数</th>
+          <th>接单人</th>
+          <th>进度</th>
+          <th>倒计时</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="list"></tbody>
+    </table>
+    <div id="emptyState" class="empty-state" style="display:none">
+      <div class="empty-icon">📭</div>
+      <p style="font-size:16px;margin-bottom:8px">暂无订单数据</p>
+      <p style="font-size:13px">在上方录入区添加您的第一笔订单吧</p>
+    </div>
+  </div>
+  
+  <!-- 分页 -->
+  <div class="pagination" id="pagination">
+    <span class="page-info">第 <span id="currentPage">1</span> 页 / 共 <span id="totalPages">1</span> 页</span>
+    <div class="page-btns">
+      <button class="page-btn" onclick="goToPage('first')">首页</button>
+      <button class="page-btn" onclick="goToPage('prev')">上一页</button>
+      <button class="page-btn" onclick="goToPage('next')">下一页</button>
+      <button class="page-btn" onclick="goToPage('last')">尾页</button>
+    </div>
+  </div>
+</div>
 </div>
 
-<!-- 二级管理员提交修改弹窗 -->
-<div class="mask" id="editApplyModal">
-    <div class="modal">
-        <div class="modal-title">提交订单修改申请</div>
-        <div class="input-row"><input type="text" id="editOrderId" placeholder="订单编号" readonly></div>
-        <div class="input-row"><input type="text" id="newCus" placeholder="新客户名称"></div>
-        <div class="input-row"><input type="text" id="newMoney" placeholder="新金额"></div>
-        <div class="input-row"><textarea id="newRemark" placeholder="修改备注说明"></textarea></div>
-        <button class="btn btn-warn" onclick="submitAuditApply()">提交审核</button>
-        <button class="btn btn-cancel" style="margin-top:10px" onclick="closeModal('editApplyModal')">取消</button>
-    </div>
+<!-- 模态框合集 -->
+<!-- 权限管理弹窗-仅超级管理员可见 -->
+<div class="modal" id="roleModal" onclick="closeModalByMask(event, 'roleModal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="title">🔑 二级管理员权限授予</div>
+    <div class="input-row"><input type="text" id="grantUser" placeholder="输入已注册的用户名"></div>
+    <button class="btn btn-warning" onclick="grantSubAdmin()">确认授予二级管理员权限</button>
+    <button class="btn btn-default" style="margin-top:10px" onclick="closeModal('roleModal')">关闭</button>
+    <div style="margin-top:20px;color:var(--gray);font-size:12px">提示：二级管理员可查看全量订单，修改需提交审核</div>
+  </div>
 </div>
 
-<!-- 找回密码弹窗 -->
-<div class="mask" id="findModal">
-    <div class="modal">
-        <div class="modal-title">密保找回密码</div>
-        <div class="input-row"><input type="text" id="findU" placeholder="用户名"></div>
-        <div class="input-row"><input type="text" id="findA" placeholder="密保答案"></div>
-        <div class="input-row"><input type="password" id="findNewPwd" placeholder="新密码"></div>
-        <div class="modal-btn">
-            <button class="btn-cancel" onclick="closeModal('findModal')">取消</button>
-            <button class="btn-confirm" onclick="resetPwd()">确认重置</button>
-        </div>
+<!-- 审核申请列表-仅超级管理员可见 -->
+<div class="modal" id="auditListModal" onclick="closeModalByMask(event, 'auditListModal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="title">📝 订单修改审核申请</div>
+    <div id="auditContent" class="empty-state" style="padding:20px">
+      <div class="empty-icon">📭</div>
+      <p>暂无待审核申请</p>
     </div>
+    <button class="btn btn-default" style="margin-top:10px;width:100%" onclick="closeModal('auditListModal')">关闭</button>
+  </div>
 </div>
 
-<!-- 修改密码弹窗 -->
-<div class="mask" id="editPwdModal">
-    <div class="modal">
-        <div class="modal-title">修改个人密码</div>
-        <div class="input-row"><input type="password" id="oldPwd" placeholder="原密码"></div>
-        <div class="input-row"><input type="password" id="newPwd" placeholder="新密码"></div>
-        <div class="modal-btn">
-            <button class="btn-cancel" onclick="closeModal('editPwdModal')">取消</button>
-            <button class="btn-confirm" onclick="userChangePwd()">确认修改</button>
-        </div>
-    </div>
+<!-- 二级管理员修改申请弹窗 -->
+<div class="modal" id="editApplyModal" onclick="closeModalByMask(event, 'editApplyModal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="title">📝 提交订单修改审核</div>
+    <div class="input-row"><input type="text" id="editOrderId" placeholder="订单编号" readonly></div>
+    <div class="input-row"><input type="text" id="newCus" placeholder="新渠道/客户名称"></div>
+    <div class="input-row"><input type="number" id="newMoney" placeholder="新金额（元）" min="0"></div>
+    <div class="input-row"><input type="number" id="newPage" placeholder="新页数" min="1"></div>
+    <div class="input-row"><textarea id="newRemark" placeholder="修改原因/备注"></textarea></div>
+    <button class="btn btn-warning" onclick="submitAuditApply()">提交审核申请</button>
+    <button class="btn btn-default" style="margin-top:10px" onclick="closeModal('editApplyModal')">取消</button>
+  </div>
 </div>
+
+<!-- 渠道管理模态框-所有角色可见 -->
+<div class="modal" id="chModal" onclick="closeModalByMask(event, 'chModal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="title">🏪 渠道管理</div>
+    <div class="input-row"><label>渠道名称</label><input id="chName" placeholder="如：淘宝、闲鱼、零感"></div>
+    <div class="input-row"><label>分成比例（0-1）</label><input id="chRate" type="number" min="0" max="1" step="0.01" placeholder="0.4 表示 40%"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-success" onclick="addCh()" style="flex:1">➕ 添加渠道</button>
+      <button class="btn-default" onclick="closeModal('chModal')">关闭</button>
+    </div>
+    <div id="chList" style="margin-top:20px;max-height:250px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- 找回密码弹窗-所有角色可见 -->
+<div class="modal" id="findModal" onclick="closeModalByMask(event, 'findModal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="title">🔐 密保找回密码</div>
+    <div class="input-row"><input type="text" id="findU" placeholder="请输入用户名"></div>
+    <div class="input-row"><input type="text" id="findA" placeholder="请输入密保答案"></div>
+    <div class="input-row"><input type="password" id="findNewPwd" placeholder="请设置新密码（不少于6位）"></div>
+    <button class="btn btn-primary" onclick="resetPwd()">确认重置密码</button>
+    <button class="btn btn-default" style="margin-top:10px" onclick="closeModal('findModal')">取消</button>
+  </div>
+</div>
+
+<!-- 快捷键提示模态框-所有角色可见 -->
+<div class="modal" id="shortcutModal" onclick="closeModalByMask(event, 'shortcutModal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="title">⌨️ 快捷键列表</div>
+    <div style="font-size:13px;line-height:2">
+      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + S</kbd> 保存订单</div>
+      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + N</kbd> 新建订单（清空表单）</div>
+      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + D</kbd> 切换深色模式</div>
+      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + R</kbd> 刷新统计</div>
+      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Ctrl + E</kbd> 导出选中订单</div>
+      <div><kbd style="background:var(--light);padding:2px 8px;border-radius:4px">Esc</kbd> 关闭所有模态框</div>
+    </div>
+    <button class="btn-default" onclick="closeModal('shortcutModal')" style="margin-top:16px;width:100%">关闭</button>
+  </div>
+</div>
+
+<!-- Toast提示-全局通用 -->
+<div class="tip-toast" id="toast"></div>
+<!-- 快捷键提示浮层-全局通用 -->
+<div class="shortcut-hint" id="shortcutHint"></div>
 
 <script>
-// 基础常量初始化
-const ADMIN_ACCOUNT = "admin";
-const DEFAULT_INIT_PWD = "123456";
-
-// 初始化超级管理员数据
-if(!localStorage.getItem("pwd_"+ADMIN_ACCOUNT)){
+// ===== 核心配置-权限常量 =====
+const ADMIN_ACCOUNT = "admin"; // 超级管理员账号
+const DEFAULT_INIT_PWD = "123456"; // 超级管理员默认密码
+// ===== 存储模块-全局通用 =====
+const Storage = {
+  get(key, defaultVal = null) {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : defaultVal;
+    } catch (e) {
+      console.error('Storage get error:', e);
+      showToast('⚠️ 数据读取异常', 'error');
+      return defaultVal;
+    }
+  },
+  set(key, val) {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+      this.autoBackup(key, val);
+      return true;
+    } catch (e) {
+      console.error('Storage set error:', e);
+      if (e.name === 'QuotaExceededError') {
+        showToast('❌ 存储空间不足，请清理浏览器缓存', 'error');
+      } else {
+        showToast('❌ 保存失败', 'error');
+      }
+      return false;
+    }
+  },
+  autoBackup(key, data) {
+    try {
+      const backups = this.get('autoBackups', {});
+      backups[key] = backups[key] || [];
+      backups[key].unshift({data: data,time: new Date().toISOString()});
+      backups[key] = backups[key].slice(0, 3);
+      localStorage.setItem('autoBackups', JSON.stringify(backups));
+    } catch (e) {
+      console.error('Auto backup failed:', e);
+    }
+  },
+  exportToFile(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;a.download = filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
+};
+// ===== 应用状态-融合权限+可视化 =====
+const AppState = {
+  // 订单+渠道数据
+  list: Storage.get('orderList', []),
+  channels: Storage.get('channel', {"零感":0.4,"创致":0.4,"阿木木":1.0}),
+  auditList: Storage.get('auditList', []), // 审核申请列表
+  // 可视化配置
+  currentFilter: 'all',
+  currentProgress: 25,
+  countMode: Storage.get('countMode', 0),
+  charts: { count: null, money: null },
+  // 分页+搜索
+  currentPage: 1,
+  pageSize: 20,
+  searchKeyword: '',
+  // 草稿
+  draft: Storage.get('draft', null),
+  // 权限状态
+  currentUser: '',
+  userRole: '', // super/admin | sub/admin | designer
+};
+// ===== 工具函数-全局通用 =====
+const Utils = {
+  fmtMoney: (v) => Number(v || 0).toFixed(2),
+  escapeHtml: (str) => {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  },
+  debounce: (fn, delay) => {
+    let timer = null;
+    return (...args) => {clearTimeout(timer);timer = setTimeout(() => fn.apply(null, args), delay);};
+  },
+  generateId: () => Date.now().toString(36) + Math.random().toString(36).substr(2),
+  formatDate: (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return isNaN(d) ? '' : d.toLocaleString('zh-CN');
+  },
+  getCountdown: (targetTime, mode) => {
+    if (!targetTime || mode === 2) return { text: '', color: '' };
+    const now = Date.now();
+    const target = new Date(targetTime).getTime();
+    const diff = target - now;
+    if (diff < 0) return { text: '已超时', color: 'var(--red)' };
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const text = mode === 0 ? `${days}天${hours}时${mins}分` : `${days}天`;
+    const color = diff < 86400000 ? 'var(--orange)' : 'var(--green)';
+    return { text, color };
+  },
+  getTrend: (type) => {
+    // 按当前用户权限过滤数据
+    let list = AppState.userRole === 'designer' 
+      ? AppState.list.filter(item => item.creator === AppState.currentUser) 
+      : AppState.list;
+    if (list.length < 2) return '-';
+    const now = new Date();
+    const thisWeek = list.filter(x => {const d = new Date(x.timeOrder);return (now - d) <= 7 * 86400000;});
+    const lastWeek = list.filter(x => {const d = new Date(x.timeOrder);const diff = now - d;return diff > 7 * 86400000 && diff <= 14 * 86400000;});
+    if (lastWeek.length === 0) return '-';
+    if (type === 'count') {
+      const trend = ((thisWeek.length - lastWeek.length) / lastWeek.length * 100).toFixed(0);
+      return trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→0%';
+    } else if (type === 'money') {
+      const thisTotal = thisWeek.reduce((sum, x) => sum + (Number(x.price) || 0), 0);
+      const lastTotal = lastWeek.reduce((sum, x) => sum + (Number(x.price) || 0), 0);
+      if (lastTotal === 0) return '-';
+      const trend = ((thisTotal - lastTotal) / lastTotal * 100).toFixed(0);
+      return trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→0%';
+    } else if (type === 'final') {
+      const thisFinal = thisWeek.reduce((sum, x) => sum + (Number(x.total) || 0), 0);
+      const lastFinal = lastWeek.reduce((sum, x) => sum + (Number(x.total) || 0), 0);
+      if (lastFinal === 0) return '-';
+      const trend = ((thisFinal - lastFinal) / lastFinal * 100).toFixed(0);
+      return trend > 0 ? `↑${trend}%` : trend < 0 ? `↓${Math.abs(trend)}%` : '→0%';
+    }
+    return '-';
+  },
+  // 按权限过滤数据-核心方法
+  filterByRole: (list) => {
+    if (AppState.userRole === 'super') return list; // 超级管理员-全量
+    if (AppState.userRole === 'sub') return list;   // 二级管理员-全量
+    if (AppState.userRole === 'designer') return list.filter(item => item.creator === AppState.currentUser); // 设计师-仅个人
+    return [];
+  }
+};
+// ===== 权限核心方法 =====
+// 初始化超级管理员
+function initSuperAdmin() {
+  if(!localStorage.getItem("pwd_"+ADMIN_ACCOUNT)){
     localStorage.setItem("pwd_"+ADMIN_ACCOUNT,DEFAULT_INIT_PWD);
     localStorage.setItem("safeA_"+ADMIN_ACCOUNT,"admin");
+  }
 }
-// 初始化审核、订单存储空数组
-if(!localStorage.getItem("auditList")) localStorage.setItem("auditList",JSON.stringify([]));
-if(!localStorage.getItem("allOrder")) localStorage.setItem("allOrder",JSON.stringify([]));
-
-// 基础交互函数
+// 检查用户角色
+function checkUserRole(user) {
+  if (user === ADMIN_ACCOUNT) return 'super';
+  if (localStorage.getItem("subAdmin_"+user)) return 'sub';
+  return 'designer';
+}
+// 渲染用户权限信息
+function renderUserRole() {
+  const roleTag = document.getElementById('roleTag');
+  const userName = document.getElementById('userName');
+  const roleManageBtn = document.getElementById('roleManageBtn');
+  const auditListBtn = document.getElementById('auditListBtn');
+  // 设置用户名
+  userName.innerText = AppState.currentUser;
+  // 设置角色标签
+  if (AppState.userRole === 'super') {
+    roleTag.className = 'role-tag role-super';
+    roleTag.innerText = '超级管理员';
+    roleManageBtn.style.display = 'block';
+    auditListBtn.style.display = 'block';
+  } else if (AppState.userRole === 'sub') {
+    roleTag.className = 'role-tag role-sub';
+    roleTag.innerText = '二级管理员';
+    roleManageBtn.style.display = 'none';
+    auditListBtn.style.display = 'none';
+  } else {
+    roleTag.className = 'role-tag role-design';
+    roleTag.innerText = '设计师';
+    roleManageBtn.style.display = 'none';
+    auditListBtn.style.display = 'none';
+  }
+  // 订单录入-接单人自动填充当前用户
+  document.getElementById('user').value = AppState.currentUser;
+}
+// 授予二级管理员权限
+function grantSubAdmin() {
+  const targetU = document.getElementById('grantUser').value.trim();
+  if(!targetU) return showToast('❌ 请输入用户名', 'error');
+  if(!localStorage.getItem("pwd_"+targetU)) return showToast('❌ 该用户未注册', 'error');
+  if(targetU === ADMIN_ACCOUNT) return showToast('❌ 无法修改超级管理员权限', 'error');
+  localStorage.setItem("subAdmin_"+targetU,"yes");
+  showToast('✅ 二级管理员权限授予成功！对方重新登录生效', 'success');
+  closeModal('roleModal');
+}
+// 提交修改审核申请（二级管理员）
+function submitAuditApply() {
+  const orderId = document.getElementById('editOrderId').value;
+  const newCus = document.getElementById('newCus').value.trim();
+  const newMoney = document.getElementById('newMoney').value;
+  const newPage = document.getElementById('newPage').value;
+  const newRemark = document.getElementById('newRemark').value.trim();
+  if (!newCus && !newMoney && !newPage) return showToast('❌ 请填写修改内容', 'error');
+  const audit = {
+    id: Utils.generateId(),
+    orderId: orderId,
+    applyUser: AppState.currentUser,
+    newCus: newCus,
+    newMoney: Number(newMoney) || 0,
+    newPage: Number(newPage) || 0,
+    newRemark: newRemark,
+    status: "pending",
+    applyTime: new Date().toLocaleString()
+  };
+  AppState.auditList.push(audit);
+  Storage.set('auditList', AppState.auditList);
+  showToast('✅ 修改申请已提交，等待超级管理员审核', 'success');
+  closeModal('editApplyModal');
+  loadAuditList();
+}
+// 加载审核列表（超级管理员）
+function loadAuditList() {
+  const auditContent = document.getElementById('auditContent');
+  const pendingAudit = AppState.auditList.filter(item => item.status === 'pending');
+  if (pendingAudit.length === 0) {
+    auditContent.innerHTML = `<div class="empty-state" style="padding:20px"><div class="empty-icon">📭</div><p>暂无待审核申请</p></div>`;
+    return;
+  }
+  let html = '';
+  pendingAudit.forEach((item, idx) => {
+    const order = AppState.list.find(o => o.id === item.orderId);
+    html += `
+    <div class="card" style="padding:16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span>申请人：<b>${item.applyUser}</b></span>
+        <span class="audit-pending">待审核</span>
+      </div>
+      <div style="font-size:13px;margin-bottom:4px">订单ID：${item.orderId}</div>
+      <div style="font-size:13px;margin-bottom:4px">原信息：${order?.channel || '未知'} | ¥${Utils.fmtMoney(order?.price || 0)} | ${order?.pages || 0}P</div>
+      <div style="font-size:13px;margin-bottom:4px">修改为：${item.newCus || order?.channel} | ${item.newMoney > 0 ? '¥'+Utils.fmtMoney(item.newMoney) : '¥'+Utils.fmtMoney(order?.price || 0)} | ${item.newPage > 0 ? item.newPage+'P' : (order?.pages || 0)+'P'}</div>
+      ${item.newRemark ? `<div style="font-size:13px;margin-bottom:8px">备注：${item.newRemark}</div>` : ''}
+      <div style="font-size:12px;color:var(--gray);margin-bottom:8px">申请时间：${item.applyTime}</div>
+      <button class="btn btn-success" style="padding:6px 12px;font-size:12px" onclick="passAudit(${idx})">审核通过</button>
+      <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;margin-left:8px" onclick="rejectAudit(${idx})">驳回申请</button>
+    </div>`;
+  });
+  auditContent.innerHTML = html;
+}
+// 审核通过（超级管理员）
+function passAudit(idx) {
+  const audit = AppState.auditList[idx];
+  const order = AppState.list.find(o => o.id === audit.orderId);
+  if (!order) return showToast('❌ 订单不存在', 'error');
+  // 更新订单数据
+  if (audit.newCus) order.channel = audit.newCus;
+  if (audit.newMoney > 0) {
+    order.price = audit.newMoney;
+    // 重新计算收益
+    order.total = audit.newMoney * (order.rate || 0.4);
+  }
+  if (audit.newPage > 0) order.pages = audit.newPage;
+  if (audit.newRemark) order.remark = audit.newRemark;
+  // 更新审核状态
+  AppState.auditList[idx].status = "pass";
+  AppState.auditList[idx].auditTime = new Date().toLocaleString();
+  // 保存数据
+  Storage.set('orderList', AppState.list);
+  Storage.set('auditList', AppState.auditList);
+  showToast('✅ 审核通过，订单已更新', 'success');
+  loadAuditList();
+  renderTable();
+  refreshStats();
+  updateCharts();
+}
+// 驳回审核（超级管理员）
+function rejectAudit(idx) {
+  AppState.auditList[idx].status = "reject";
+  AppState.auditList[idx].auditTime = new Date().toLocaleString();
+  Storage.set('auditList', AppState.auditList);
+  showToast('✅ 申请已驳回', 'success');
+  loadAuditList();
+}
+// 打开修改申请弹窗（二级管理员）
+function openEditApply(id) {
+  const order = AppState.list.find(o => o.id === id);
+  if (!order) return showToast('❌ 订单不存在', 'error');
+  document.getElementById('editOrderId').value = id;
+  document.getElementById('newCus').value = order.channel;
+  document.getElementById('newMoney').value = order.price;
+  document.getElementById('newPage').value = order.pages;
+  document.getElementById('newRemark').value = order.remark || '';
+  openModal('editApplyModal');
+}
+// ===== 登录注册相关 =====
 function tab(t){
-    document.getElementById("loginForm").style.display = t==="login"?"block":"none";
-    document.getElementById("regForm").style.display = t==="reg"?"block":"none";
-    document.querySelectorAll(".tab-item")[0].classList.toggle("active",t==="login");
-    document.querySelectorAll(".tab-item")[1].classList.toggle("active",t==="reg");
+  document.getElementById("loginForm").style.display = t==="login"?"block":"none";
+  document.getElementById("regForm").style.display = t==="reg"?"block":"none";
+  document.querySelectorAll(".tab-item")[0].classList.toggle("active",t==="login");
+  document.querySelectorAll(".tab-item")[1].classList.toggle("active",t==="reg");
 }
 function showPwd(id){
-    let el = document.getElementById(id);
-    el.type = el.type==="password"?"text":"password";
+  let el = document.getElementById(id);
+  el.type = el.type==="password"?"text":"password";
 }
-function openModal(id){document.getElementById(id).style.display="flex"}
-function closeModal(id){document.getElementById(id).style.display="none"}
-function logout(){
-    if(confirm("确定退出当前账号吗？")){
-        localStorage.removeItem("currentLogin");
-        location.reload();
-    }
-}
-
-// 账号登录&权限判断
 function login(){
-    let u = document.getElementById("loginUser").value.trim();
-    let p = document.getElementById("loginPwd").value.trim();
-    if(!u||!p) return alert("请填写完整账号密码");
-    let realPwd = localStorage.getItem("pwd_"+u);
-    if(!realPwd||realPwd!==p) return alert("账号或密码错误");
-
-    localStorage.setItem("currentLogin",u);
-    // 超级管理员
-    if(u===ADMIN_ACCOUNT){
-        document.getElementById("authPage").style.display="none";
-        document.getElementById("adminPage").style.display="block";
-        document.getElementById("adminName").innerText=u;
-        loadAdminAllOrder();loadAuditList();
-    }
-    // 二级管理员
-    else if(localStorage.getItem("subAdmin_"+u)){
-        document.getElementById("authPage").style.display="none";
-        document.getElementById("subAdminPage").style.display="block";
-        document.getElementById("subAdminName").innerText=u;
-        loadSubAdminOrder();
-    }
-    // 普通设计师
-    else{
-        document.getElementById("authPage").style.display="none";
-        document.getElementById("designerPage").style.display="block";
-        document.getElementById("designerName").innerText=u;
-        loadDesignerMyOrder();
-    }
+  let u = document.getElementById("loginUser").value.trim();
+  let p = document.getElementById("loginPwd").value.trim();
+  if(!u||!p) return showToast("❌ 请填写完整账号密码", 'error');
+  let realPwd = localStorage.getItem("pwd_"+u);
+  if(!realPwd||realPwd!==p) return showToast("❌ 账号或密码错误", 'error');
+  // 初始化权限状态
+  AppState.currentUser = u;
+  AppState.userRole = checkUserRole(u);
+  // 保存登录状态
+  localStorage.setItem("currentLogin", u);
+  // 显示系统页面
+  document.getElementById("authPage").style.display = "none";
+  document.getElementById("systemPage").style.display = "block";
+  // 初始化系统
+  initSystem();
+  showToast(`✅ 欢迎回来，${u}`, 'success');
 }
-
-// 注册（默认普通设计师）
 function register(){
-    let u = document.getElementById("regUser").value.trim();
-    let p = document.getElementById("regPwd").value.trim();
-    let q = document.getElementById("safeQ").value;
-    let a = document.getElementById("safeA").value.trim();
-    if(!u||!p||!q||!a) return alert("用户名、密码、密保全部必填");
-    if(localStorage.getItem("pwd_"+u)) return alert("该用户名已存在");
-
-    localStorage.setItem("pwd_"+u,p);
-    localStorage.setItem("safeA_"+u,a);
-    alert("注册成功！默认设计师权限，请登录");
-    tab("login");
+  let u = document.getElementById("regUser").value.trim();
+  let p = document.getElementById("regPwd").value.trim();
+  let q = document.getElementById("safeQ").value;
+  let a = document.getElementById("safeA").value.trim();
+  if(!u||!p||!q||!a) return showToast("❌ 用户名、密码、密保全部必填", 'error');
+  if(localStorage.getItem("pwd_"+u)) return showToast("❌ 该用户名已存在", 'error');
+  if (p.length < 6) return showToast("❌ 密码长度不少于6位", 'error');
+  // 保存用户信息
+  localStorage.setItem("pwd_"+u,p);
+  localStorage.setItem("safeA_"+u,a);
+  showToast("✅ 注册成功！默认设计师权限，请登录", 'success');
+  tab("login");
 }
-
-// 超级管理员：授予二级管理员权限
-function grantSubAdmin(){
-    let targetU = document.getElementById("grantUser").value.trim();
-    if(!targetU) return alert("请输入用户名");
-    if(!localStorage.getItem("pwd_"+targetU)) return alert("该用户未注册");
-    if(targetU===ADMIN_ACCOUNT) return alert("无法修改超级管理员权限");
-
-    localStorage.setItem("subAdmin_"+targetU,"yes");
-    alert("二级管理员权限授予成功！对方重新登录生效");
-    closeModal("roleModal");
-}
-
-// 订单相关-设计师新增个人订单
-function addDesignerOrder(){
-    let user = localStorage.getItem("currentLogin");
-    let order = {
-        id:Date.now(),creator:user,
-        cus:document.getElementById("cus").value,
-        money:document.getElementById("money").value,
-        page:document.getElementById("page").value,
-        remark:document.getElementById("remark").value,
-        time:new Date().toLocaleString()
-    };
-    let all = JSON.parse(localStorage.getItem("allOrder"));
-    all.push(order);
-    localStorage.setItem("allOrder",JSON.stringify(all));
-    alert("订单保存成功");
-    loadDesignerMyOrder();
-    document.getElementById("cus").value=document.getElementById("money").value=document.getElementById("page").value=document.getElementById("remark").value="";
-}
-
-// 二级管理员：提交修改审核
-function submitAuditApply(){
-    let applyUser = localStorage.getItem("currentLogin");
-    let audit = {
-        orderId:document.getElementById("editOrderId").value,
-        applyUser:applyUser,
-        newCus:document.getElementById("newCus").value,
-        newMoney:document.getElementById("newMoney").value,
-        newRemark:document.getElementById("newRemark").value,
-        status:"pending",applyTime:new Date().toLocaleString()
-    };
-    let auditList = JSON.parse(localStorage.getItem("auditList"));
-    auditList.push(audit);
-    localStorage.setItem("auditList",JSON.stringify(auditList));
-    alert("修改申请已提交，等待超级管理员审核");
-    closeModal("editApplyModal");
-}
-
-// 超级管理员：审核通过生效
-function passAudit(index){
-    let auditList = JSON.parse(localStorage.getItem("auditList"));
-    let apply = auditList[index];
-    let allOrder = JSON.parse(localStorage.getItem("allOrder"));
-    // 正式修改订单数据
-    allOrder.forEach(item=>{
-        if(item.id==apply.orderId){
-            item.cus=apply.newCus;item.money=apply.newMoney;item.remark=apply.newRemark;
-        }
-    });
-    localStorage.setItem("allOrder",JSON.stringify(allOrder));
-    auditList[index].status="pass";
-    localStorage.setItem("auditList",JSON.stringify(auditList));
-    alert("审核通过，订单已更新");
-    loadAuditList();loadAdminAllOrder();
-}
-
-// 数据渲染加载（优化流畅不卡顿）
-function loadAdminAllOrder(){
-    let all = JSON.parse(localStorage.getItem("allOrder"));
-    let html = all.length?"":'<div class="empty">暂无订单数据</div>';
-    all.forEach(item=>{
-        html += `
-        <div class="order-item">
-            <div>订单ID：${item.id} | 创建人：${item.creator}</div>
-            <div>客户：${item.cus} | 金额：${item.money} | 页数：${item.page}</div>
-            <div>备注：${item.remark} | 时间：${item.time}</div>
-        </div>`;
-    });
-    document.getElementById("adminAllOrder").innerHTML=html;
-}
-function loadSubAdminOrder(){
-    let all = JSON.parse(localStorage.getItem("allOrder"));
-    let html = all.length?"":'<div class="empty">暂无订单数据</div>';
-    all.forEach(item=>{
-        html += `
-        <div class="order-item">
-            <div>订单ID：${item.id} | 创建人：${item.creator}</div>
-            <div>客户：${item.cus} | 金额：${item.money} | 页数：${item.page}</div>
-            <div>备注：${item.remark}</div>
-            <button class="btn btn-warn" style="margin-top:8px" onclick="openEditApply(${item.id})">提交修改审核</button>
-        </div>`;
-    });
-    document.getElementById("subAllOrder").innerHTML=html;
-}
-function loadDesignerMyOrder(){
-    let user = localStorage.getItem("currentLogin");
-    let all = JSON.parse(localStorage.getItem("allOrder"));
-    let my = all.filter(item=>item.creator===user);
-    let html = my.length?"":'<div class="empty">暂无个人订单</div>';
-    my.forEach(item=>{
-        html += `
-        <div class="order-item">
-            <div>金额：${item.money} | 页数：${item.page}</div>
-            <div>备注：${item.remark} | 提交时间：${item.time}</div>
-        </div>`;
-    });
-    document.getElementById("myOrder").innerHTML=html;
-}
-function loadAuditList(){
-    let audit = JSON.parse(localStorage.getItem("auditList"));
-    let html = audit.length?"":'<div class="empty">暂无待审核申请</div>';
-    audit.forEach((item,idx)=>{
-        let tag = item.status==="pending"?`<span class="audit-tag tag-pending">待审核</span>`:`<span class="audit-tag tag-pass">已通过</span>`;
-        html += `
-        <div class="order-item">
-            <div>申请人：${item.applyUser} ${tag}</div>
-            <div>订单ID：${item.orderId}</div>
-            <div>修改内容：${item.newCus} | ${item.newMoney}</div>
-            ${item.status==="pending"?`<button class="btn btn-success" style="margin-top:8px" onclick="passAudit(${idx})">审核通过</button>`:""}
-        </div>`;
-    });
-    document.getElementById("auditContent").innerHTML=html;
-}
-
-// 二级管理员打开修改申请弹窗
-function openEditApply(id){
-    document.getElementById("editOrderId").value=id;
-    openModal("editApplyModal");
-}
-
-// 密码通用：找回+修改
 function resetPwd(){
-    let u = document.getElementById("findU").value.trim();
-    let a = document.getElementById("findA").value.trim();
-    let newP = document.getElementById("findNewPwd").value.trim();
-    if(!u||!a||!newP) return alert("全部信息必填");
-    if(localStorage.getItem("safeA_"+u)!==a) return alert("密保答案错误");
-    localStorage.setItem("pwd_"+u,newP);
-    alert("密码重置成功！");closeModal("findModal");
+  let u = document.getElementById("findU").value.trim();
+  let a = document.getElementById("findA").value.trim();
+  let newP = document.getElementById("findNewPwd").value.trim();
+  if(!u||!a||!newP) return showToast("❌ 全部信息必填", 'error');
+  if(newP.length < 6) return showToast("❌ 新密码长度不少于6位", 'error');
+  if(localStorage.getItem("safeA_"+u)!==a) return showToast("❌ 密保答案错误", 'error');
+  localStorage.setItem("pwd_"+u,newP);
+  showToast("✅ 密码重置成功！请重新登录", 'success');
+  closeModal("findModal");
 }
-function userChangePwd(){
-    let u = localStorage.getItem("currentLogin");
-    let old = document.getElementById("oldPwd").value.trim();
-    let newP = document.getElementById("newPwd").value.trim();
-    if(localStorage.getItem("pwd_"+u)!==old) return alert("原密码错误");
-    localStorage.setItem("pwd_"+u,newP);
-    alert("密码修改成功，请重新登录");
-    closeModal("editPwdModal");logout();
+function logout(){
+  if(confirm("确定退出当前账号吗？")){
+    localStorage.removeItem("currentLogin");
+    location.reload();
+  }
 }
-
-// 自动回填登录状态
-window.onload=function(){
-    let loginUser = localStorage.getItem("currentLogin");
-    if(loginUser) login();
+// ===== 系统初始化-融合权限+可视化 =====
+function initSystem() {
+  // 渲染权限信息
+  renderUserRole();
+  // 初始化可视化
+  renderChannels();
+  renderTable();
+  setProgress(25);
+  updateCountModeUI();
+  const now = new Date().toISOString().slice(0, 16);
+  document.getElementById('timeOrder').value = now;
+  // 恢复草稿
+  if (AppState.draft) restoreDraft();
+  // 初始化图表
+  setTimeout(initCharts, 300);
+  // 智能识别输入
+  const pasteArea = document.getElementById('pasteArea');
+  pasteArea.addEventListener('input', Utils.debounce(handlePasteInput, 400));
+  // 注册快捷键
+  registerShortcuts();
+  // 检查深色模式
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeBtn').textContent = '☀️ 浅色';
+  }
+  // 加载审核列表（仅超级管理员）
+  if (AppState.userRole === 'super') loadAuditList();
 }
-</script>
-</body>
-</html>
+// ===== 可视化核心功能-原看板功能完整保留 =====
+function initCharts() {
+  const ctx1 = document.getElementById('chartCount');
+  const ctx2 = document.getElementById('chartMoney');
+  if (!ctx1 || !ctx2) return;
+  AppState.charts.count = new Chart(ctx1, {
+    type: 'line',data: { labels: [], datasets: [{ label: '订单数', borderColor: '#277ef0', backgroundColor: 'rgba(39,126,255,0.1)', fill: true, tension: 0.3,pointRadius: 4,pointHoverRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false,plugins: {legend: { display: true, position: 'top' }},scales: {y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+  AppState.charts.money = new Chart(ctx2, {
+    type: 'line',data: { labels: [], datasets: [{ label: '收益（元）', borderColor: '#00b42a', backgroundColor: 'rgba(0,180,42,0.1)', fill: true, tension: 0.3,pointRadius: 4,pointHoverRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false,plugins: {legend: { display: true, position: 'top' }},scales: {y: { beginAtZero: true } } }
+  });
+  updateCharts();
+}
+function handlePasteInput(e) {
+  const text = e.target.value.trim();
+  if (!text) return;
+  let pageFound = false, priceFound = false, channelFound = false;
+  // 识别页数
+  const pagePatterns = [/(\d+)\s*[页pP](?:PT|pt|幻灯片)?/,/共\s*(\d+)\s*[页pP]/,/(\d+)\s*[页pP]\s*左右/];
+  for (const pattern of pagePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const pageNum = parseInt(match[1]);
+      if (pageNum > 0 && pageNum < 500) {
+        document.getElementById('page').value = pageNum;
+        pageFound = true;
+        break;
+      }
+    }
+  }
+  // 识别价格
+  const pricePatterns = [/原价[：:]\s*(\d+)/,/(\d+)\s*[元¥]/,/[¥￥]\s*(\d+)/,/价格[：:]\s*(\d+)/,/(\d+)\s*块/];
+  for (const pattern of pricePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const priceNum = parseInt(match[1]);
+      if (priceNum >= 50 && priceNum <= 50000) {
+        document.getElementById('price').value = priceNum;
+        priceFound = true;
+        break;
+      }
+    }
+  }
+  if (!priceFound) {
+    const numbers = text.match(/\d+/g);
+    if (numbers && numbers.length > 0) {
+      const allNumbers = numbers.map(n => parseInt(n));
+      let candidateNumbers = allNumbers;
+      if (pageFound) {
+        const pageNum = parseInt(document.getElementById('page').value);
+        candidateNumbers = allNumbers.filter(n => n !== pageNum);
+      }
+      const priceCandidates = candidateNumbers.filter(n => n >= 50);
+      if (priceCandidates.length > 0) {
+        const maxPrice = Math.max(...priceCandidates);
+        document.getElementById('price').value = maxPrice;
+        priceFound = true;
+      }
+    }
+  }
+  // 识别渠道
+  const channelKeywords = Object.keys(AppState.channels);
+  for (const keyword of channelKeywords) {
+    if (text.includes(keyword)) {
+      document.getElementById('channel').value = keyword;
+      channelFound = true;
+      break;
+    }
+  }
+  // 提示
+  const parts = [];
+  if (pageFound) parts.push(`页数=${document.getElementById('page').value}P`);
+  if (priceFound) parts.push(`价格=¥${document.getElementById('price').value}`);
+  if (channelFound) parts.push(`渠道=${document.getElementById('channel').value}`);
+  if (parts.length > 0) {
+    showToast('✅ 自动识别：' + parts.join(' | '), 'success');
+  } else {
+    showToast('⚠️ 未能自动识别，请手动填写', 'warning');
+  }
+  if (pageFound || priceFound) setTimeout(calc, 100);
+}
+function setProgress(val) {
+  AppState.currentProgress = val;
+  const bar = document.getElementById('pro');
+  bar.style.width = val + '%';
+  bar.className = 'progress-bar p' + val;
+}
+function fillRealTime() {
+  const now = new Date().toISOString().slice(0, 16);
+  document.getElementById('timeReal').value = now;
+  setProgress(100);
+  showToast('✅ 已标记完成', 'success');
+}
+function renderChannels() {
+  const container = document.getElementById('channelBtns');
+  const listContainer = document.getElementById('chList');
+  let html = '';
+  for (const [name, rate] of Object.entries(AppState.channels)) {
+    html += `<div class="filter-tag" onclick="selectChannel('${Utils.escapeHtml(name)}')">${Utils.escapeHtml(name)}</div>`;
+  }
+  container.innerHTML = html;
+  let listHtml = '<table style="width:100%;font-size:13px"><tr><th>渠道</th><th>比例</th><th>操作</th></tr>';
+  for (const [name, rate] of Object.entries(AppState.channels)) {
+    listHtml += `<tr><td>${Utils.escapeHtml(name)}</td><td>${(rate * 100).toFixed(0)}%</td><td><button onclick="deleteChannel('${Utils.escapeHtml(name)}')" style="color:var(--red);font-size:12px;cursor:pointer">删除</button></td></tr>`;
+  }
+  listHtml += '</table>';
+  listContainer.innerHTML = listHtml;
+}
+function selectChannel(name) {
+  document.getElementById('channel').value = name;
+  calc();
+  showToast(`已选择：${name}`, 'info');
+}
+function addCh() {
+  const name = document.getElementById('chName').value.trim();
+  const rate = parseFloat(document.getElementById('chRate').value);
+  if (!name) {showToast('❌ 请输入渠道名称', 'error');return;}
+  if (isNaN(rate) || rate < 0 || rate > 1) {showToast('❌ 分成比例需在 0-1 之间（如 0.4 表示 40%）', 'error');return;}
+  AppState.channels[name] = rate;
+  Storage.set('channel', AppState.channels);
+  renderChannels();
+  document.getElementById('chName').value = '';
+  document.getElementById('chRate').value = '';
+  showToast('✅ 渠道添加成功', 'success');
+}
+function deleteChannel(name) {
+  if (!confirm(`确定删除渠道「${name}」吗？`)) return;
+  delete AppState.channels[name];
+  Storage.set('channel', AppState.channels);
+  renderChannels();
+  showToast('✅ 渠道已删除', 'success');
+}
+function calc() {
+  const channel = document.getElementById('channel').value.trim();
+  const price = Number(document.getElementById('price').value) || 0;
+  const pages = Number(document.getElementById('page').value) || 1;
+  const rate = AppState.channels[channel] || 0.4;
+  const total = price * rate;
+  const perPage = total / pages;
+  document.getElementById('rate').value = (rate * 100).toFixed(0) + '%';
+  document.getElementById('pagePrice').value = Utils.fmtMoney(perPage);
+  document.getElementById('totalPrice').value = Utils.fmtMoney(total);
+  return { rate, total, perPage };
+}
+function save() {
+  // 验证必填项
+  const channel = document.getElementById('channel').value.trim();
+  const price = Number(document.getElementById('price').value);
+  const pages = Number(document.getElementById('page').value);
+  if (!channel) {showToast('❌ 请填写渠道', 'error');return;}
+  if (!price || price <= 0) {showToast('❌ 请填写有效价格', 'error');return;}
+  if (!pages || pages <= 0) {showToast('❌ 请填写有效页数', 'error');return;}
+  const calcResult = calc();
+  // 构建订单-自动填充当前用户为接单人
+  const order = {
+    id: Utils.generateId(),
+    channel: channel,
+    group: document.getElementById('group').value.trim(),
+    price: price,
+    pages: pages,
+    creator: AppState.currentUser, // 接单人=当前登录用户
+    user: AppState.currentUser,
+    member: document.getElementById('member').value.trim(),
+    remark: document.getElementById('remark').value.trim(),
+    timeOrder: document.getElementById('timeOrder').value,
+    timeHope: document.getElementById('timeHope').value,
+    timeReal: document.getElementById('timeReal').value,
+    progress: AppState.currentProgress,
+    status: '待结算',
+    rate: calcResult.rate,
+    total: calcResult.total,
+    createdAt: new Date().toISOString()
+  };
+  // 添加订单
+  AppState.list.unshift(order);
+  Storage.set('orderList', AppState.list);
+  // 清除草稿
+  AppState.draft = null;
+  Storage.set('draft', null);
+  // 刷新页面
+  renderTable();
+  updateCharts();
+  clearForm();
+  showToast('✅ 订单保存成功！', 'success');
+}
+// ===== 搜索过滤+表格渲染-融合权限 =====
+function handleSearch() {
+  AppState.searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  AppState.currentPage = 1;
+  renderTable();
+}
+function getFilteredData() {
+  // 第一步：按权限过滤
+  let data = Utils.filterByRole(AppState.list);
+  // 第二步：应用筛选项
+  if (AppState.currentFilter === 'leader') {
+    data = data.filter(x => !x.member || x.member.trim() === '');
+  } else if (AppState.currentFilter === 'team') {
+    data = data.filter(x => x.member && x.member.trim() !== '');
+  } else if (AppState.currentFilter.startsWith('pro')) {
+    const targetPro = parseInt(AppState.currentFilter.replace
