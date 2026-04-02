@@ -3,44 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>管理员后台｜极简版（含密保找回+退出登录）</title>
+<title>PPT接单管理系统｜统一权限版</title>
 <style>
-/* 全局基础样式 */
-* {margin:0;padding:0;box-sizing:border-box;font-family:"微软雅黑",system-ui,-apple-system}
+* {margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑,system-ui}
 body {background:#f5f7fa;color:#333}
 
-/* 登录注册容器 */
+/* 登录注册 */
 .auth-box {max-width:420px;margin:80px auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
 .auth-title {text-align:center;font-size:22px;color:#1989fa;margin-bottom:25px;font-weight:bold}
 .tab-wrap {display:flex;border-bottom:1px solid #eee;margin-bottom:20px}
 .tab-item {flex:1;text-align:center;padding:12px 0;color:#666;cursor:pointer}
-.tab-item.active {color:#1989fa;border-bottom:2px solid #1989fa;font-weight:500}
+.tab-item.active {color:#1989fa;border-bottom:2px solid #1989fa}
 .input-row {margin-bottom:16px;position:relative}
-.input-row input {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px}
-.input-row select {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px;background:#fff}
+.input-row input, .input-row select {width:100%;padding:12px 14px;border:1px solid #e5e6eb;border-radius:6px;font-size:14px;background:#fff}
 .eye-icon {position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999}
 .btn {width:100%;padding:13px;background:#1989fa;color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;margin-top:8px}
-.btn-gray {background:#eee;color:#333}
 .tip-text {font-size:13px;color:#999;margin-top:15px;text-align:center}
 .find-pwd {color:#1989fa;cursor:pointer}
 
-/* 后台整体布局 */
+/* 后台布局 */
 .admin-layout {display:none;min-height:100vh}
 .top-nav {background:#fff;padding:16px 24px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
 .user-info {font-size:15px}
 .nav-btn {padding:8px 14px;margin-left:10px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px}
 .nav-btn.exit {color:#f56c6c;border-color:#f56c6c}
 
-/* 主内容区 */
 .main-content {padding:24px}
 .card {background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
 .card-title {font-size:16px;font-weight:500;margin-bottom:18px;color:#333;border-left:4px solid #1989fa;padding-left:10px}
 .empty-data {text-align:center;padding:60px 0;color:#999;font-size:14px}
 
-/* 弹窗通用 */
+/* 弹窗 */
 .modal-mask {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
 .modal-box {background:#fff;padding:25px;border-radius:10px;width:90%;max-width:380px}
-.modal-title {font-size:18px;margin-bottom:20px;text-align:center;font-weight:500}
+.modal-title {font-size:18px;margin-bottom:20px;text-align:center}
 .modal-btn {display:flex;gap:10px;margin-top:20px}
 .modal-btn button {flex:1;padding:11px;border-radius:6px;border:none;cursor:pointer}
 .btn-confirm {background:#1989fa;color:#fff}
@@ -49,7 +45,7 @@ body {background:#f5f7fa;color:#333}
 </head>
 <body>
 
-<!-- 登录注册页面 -->
+<!-- 登录注册 -->
 <div class="auth-box" id="authPage">
     <div class="auth-title">接单管理系统</div>
     <div class="tab-wrap">
@@ -57,30 +53,25 @@ body {background:#f5f7fa;color:#333}
         <div class="tab-item" onclick="switchTab('reg')">注册</div>
     </div>
 
-    <!-- 登录表单 -->
+    <!-- 登录 -->
     <div id="loginForm">
+        <div class="input-row"><input type="text" id="loginUser" placeholder="用户名"></div>
         <div class="input-row">
-            <input type="text" id="loginUser" placeholder="输入用户名">
-        </div>
-        <div class="input-row">
-            <input type="password" id="loginPwd" placeholder="输入密码">
+            <input type="password" id="loginPwd" placeholder="密码">
             <span class="eye-icon" onclick="togglePwd('loginPwd')">👁️</span>
         </div>
-        <button class="btn" onclick="login()">立即登录</button>
-        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">点击找回</span></div>
-        <div class="tip-text">管理员默认：账号 admin / 密码 123456</div>
+        <button class="btn" onclick="login()">登录</button>
+        <div class="tip-text">忘记密码？<span class="find-pwd" onclick="openModal('findModal')">找回密码</span></div>
+        <div class="tip-text">管理员默认：admin / 123456</div>
     </div>
 
-    <!-- 注册表单（含密保问题） -->
+    <!-- 注册（含密保） -->
     <div id="regForm" style="display:none">
+        <div class="input-row"><input type="text" id="regUser" placeholder="用户名"></div>
         <div class="input-row">
-            <input type="text" id="regUser" placeholder="设置用户名">
-        </div>
-        <div class="input-row">
-            <input type="password" id="regPwd" placeholder="设置登录密码">
+            <input type="password" id="regPwd" placeholder="密码">
             <span class="eye-icon" onclick="togglePwd('regPwd')">👁️</span>
         </div>
-        <!-- 密保问题-方案2标配3题 -->
         <div class="input-row">
             <select id="safeQuestion">
                 <option value="">请选择密保问题</option>
@@ -89,49 +80,38 @@ body {background:#f5f7fa;color:#333}
                 <option value="手机号">常用手机号后4位？</option>
             </select>
         </div>
-        <div class="input-row">
-            <input type="text" id="safeAnswer" placeholder="输入密保答案（自己牢记）">
-        </div>
-        <button class="btn" onclick="register()">完成注册</button>
+        <div class="input-row"><input type="text" id="safeAnswer" placeholder="密保答案"></div>
+        <button class="btn" onclick="register()">注册</button>
     </div>
 </div>
 
-<!-- 管理员后台页面（极简版-无新增订单） -->
+<!-- 管理员后台（极简） -->
 <div class="admin-layout" id="adminPage">
-    <!-- 顶部导航：常驻退出登录+改密码 -->
     <div class="top-nav">
-        <div class="user-info">欢迎你，<span id="adminName">管理员</span>｜权限：超级管理员</div>
+        <div class="user-info">欢迎你，<span id="adminName"></span></div>
         <div>
             <button class="nav-btn" onclick="openModal('editPwdModal')">修改密码</button>
             <button class="nav-btn exit" onclick="logout()">退出登录</button>
         </div>
     </div>
-
-    <!-- 核心内容：仅保留订单台账 -->
     <div class="main-content">
         <div class="card">
-            <div class="card-title">接单记录台账（全量数据）</div>
-            <div class="empty-data">暂无订单数据，后续对接云端自动加载</div>
+            <div class="card-title">接单记录台账</div>
+            <div class="empty-data">暂无订单数据</div>
         </div>
     </div>
 </div>
 
-<!-- 找回密码弹窗（密保验证） -->
+<!-- 找回密码弹窗 -->
 <div class="modal-mask" id="findModal">
     <div class="modal-box">
-        <div class="modal-title">密保找回密码</div>
-        <div class="input-row">
-            <input type="text" id="findUser" placeholder="输入注册用户名">
-        </div>
-        <div class="input-row">
-            <input type="text" id="findAnswer" placeholder="输入密保答案">
-        </div>
-        <div class="input-row">
-            <input type="password" id="newFindPwd" placeholder="设置新密码">
-        </div>
+        <div class="modal-title">找回密码</div>
+        <div class="input-row"><input type="text" id="findUser" placeholder="用户名"></div>
+        <div class="input-row"><input type="text" id="findAnswer" placeholder="密保答案"></div>
+        <div class="input-row"><input type="password" id="newFindPwd" placeholder="新密码"></div>
         <div class="modal-btn">
             <button class="btn-cancel" onclick="closeModal('findModal')">取消</button>
-            <button class="btn-confirm" onclick="resetPwd()">确认重置</button>
+            <button class="btn-confirm" onclick="resetPwd()">重置</button>
         </div>
     </div>
 </div>
@@ -139,146 +119,130 @@ body {background:#f5f7fa;color:#333}
 <!-- 修改密码弹窗 -->
 <div class="modal-mask" id="editPwdModal">
     <div class="modal-box">
-        <div class="modal-title">修改账号密码</div>
-        <div class="input-row">
-            <input type="password" id="oldEditPwd" placeholder="输入原密码">
-        </div>
-        <div class="input-row">
-            <input type="password" id="newEditPwd" placeholder="输入新密码">
-        </div>
+        <div class="modal-title">修改密码</div>
+        <div class="input-row"><input type="password" id="oldPwd" placeholder="原密码"></div>
+        <div class="input-row"><input type="password" id="newPwd" placeholder="新密码"></div>
         <div class="modal-btn">
             <button class="btn-cancel" onclick="closeModal('editPwdModal')">取消</button>
-            <button class="btn-confirm" onclick="saveEditPwd()">确认修改</button>
+            <button class="btn-confirm" onclick="doChangePwd()">确认修改</button>
         </div>
     </div>
 </div>
 
 <script>
-// 云端配置占位（保留你之前的密钥填写位）
-const SUPPLY_URL = "";
-const SUPPLY_KEY = "";
+// ==========================
+// 管理员统一规则（你要的最终版）
+// ==========================
+const ADMIN_USER = "admin";
+const DEFAULT_PWD = "123456";
 
-// 切换登录/注册标签
-function switchTab(type){
-    document.querySelectorAll('.tab-item').forEach((item,index)=>{
-        item.classList.toggle('active',(type==='login'&&index===0)||(type==='reg'&&index===1))
-    })
-    document.getElementById('loginForm').style.display = type==='login'?'block':'none'
-    document.getElementById('regForm').style.display = type==='reg'?'block':'none'
+// 初始化管理员（第一次自动创建）
+if (!localStorage.getItem("pwd_admin")) {
+    localStorage.setItem("pwd_admin", DEFAULT_PWD);
+    localStorage.setItem("safeQ_admin", "管理员默认密保");
+    localStorage.setItem("safeA_admin", "admin");
 }
 
-// 密码显隐切换
-function togglePwd(id){
-    let input = document.getElementById(id)
-    input.type = input.type==='password'?'text':'password'
+// 切换标签
+function switchTab(t) {
+    document.querySelectorAll(".tab-item")[0].classList.toggle("active", t === "login");
+    document.querySelectorAll(".tab-item")[1].classList.toggle("active", t === "reg");
+    document.getElementById("loginForm").style.display = t === "login" ? "block" : "none";
+    document.getElementById("regForm").style.display = t === "reg" ? "block" : "none";
 }
 
-// 弹窗控制
-function openModal(id){document.getElementById(id).style.display='flex'}
-function closeModal(id){document.getElementById(id).style.display='none'}
+// 密码显隐
+function togglePwd(id) {
+    let i = document.getElementById(id);
+    i.type = i.type === "password" ? "text" : "password";
+}
 
-// 退出登录（硬性常驻功能）
-function logout(){
-    if(confirm('确定要退出当前账号吗？')){
-        localStorage.clear()
-        location.reload()
+// 弹窗
+function openModal(id) { document.getElementById(id).style.display = "flex" }
+function closeModal(id) { document.getElementById(id).style.display = "none" }
+
+// 退出登录（硬性保留）
+function logout() {
+    if (confirm("确定退出？")) {
+        localStorage.clear();
+        location.reload();
     }
 }
 
-// 登录逻辑
-function login(){
-    let user = document.getElementById('loginUser').value.trim()
-    let pwd = document.getElementById('loginPwd').value.trim()
-    if(!user||!pwd) return alert('请填写完整账号密码')
+// 登录
+function login() {
+    let user = document.getElementById("loginUser").value.trim();
+    let pwd = document.getElementById("loginPwd").value.trim();
+    if (!user || !pwd) return alert("请填写完整");
 
-    // 管理员默认账号
-    if(user==='admin'&&pwd==='123456'){
-        localStorage.setItem('role','admin')
-        localStorage.setItem('username','admin')
-        showAdminPage()
-        return
+    let realPwd = localStorage.getItem("pwd_" + user);
+    if (realPwd && realPwd === pwd) {
+        localStorage.setItem("username", user);
+        showAdmin();
+        return;
     }
-
-    // 普通账号验证
-    let savePwd = localStorage.getItem('pwd_'+user)
-    if(savePwd&&savePwd===pwd){
-        localStorage.setItem('role','user')
-        localStorage.setItem('username',user)
-        alert('登录成功')
-        showAdminPage()
-        return
-    }
-    alert('账号或密码错误')
+    alert("账号或密码错误");
 }
 
-// 注册逻辑（保存密保问题+答案）
-function register(){
-    let user = document.getElementById('regUser').value.trim()
-    let pwd = document.getElementById('regPwd').value.trim()
-    let question = document.getElementById('safeQuestion').value
-    let answer = document.getElementById('safeAnswer').value.trim()
+// 注册
+function register() {
+    let u = document.getElementById("regUser").value.trim();
+    let p = document.getElementById("regPwd").value.trim();
+    let q = document.getElementById("safeQuestion").value;
+    let a = document.getElementById("safeAnswer").value.trim();
+    if (!u || !p || !q || !a) return alert("所有项必填");
+    if (localStorage.getItem("pwd_" + u)) return alert("用户名已存在");
 
-    if(!user||!pwd||!question||!answer) return alert('用户名、密码、密保问题及答案必填')
-    if(localStorage.getItem('pwd_'+user)) return alert('用户名已存在')
-
-    // 保存账号密码+密保信息
-    localStorage.setItem('pwd_'+user,pwd)
-    localStorage.setItem('safeQ_'+user,question)
-    localStorage.setItem('safeA_'+user,answer)
-    alert('注册成功！请前往登录')
-    switchTab('login')
+    localStorage.setItem("pwd_" + u, p);
+    localStorage.setItem("safeQ_" + u, q);
+    localStorage.setItem("safeA_" + u, a);
+    alert("注册成功！");
+    switchTab("login");
 }
 
-// 密保重置密码
-function resetPwd(){
-    let user = document.getElementById('findUser').value.trim()
-    let answer = document.getElementById('findAnswer').value.trim()
-    let newPwd = document.getElementById('newFindPwd').value.trim()
+// 找回密码（管理员也能用）
+function resetPwd() {
+    let u = document.getElementById("findUser").value.trim();
+    let a = document.getElementById("findAnswer").value.trim();
+    let newP = document.getElementById("newFindPwd").value.trim();
+    if (!u || !a || !newP) return alert("请填写完整");
 
-    if(!user||!answer||!newPwd) return alert('请填写完整信息')
-    let saveAnswer = localStorage.getItem('safeA_'+user)
-    
-    if(!saveAnswer) return alert('该用户名未注册')
-    if(saveAnswer!==answer) return alert('密保答案错误，无法重置')
+    let realA = localStorage.getItem("safeA_" + u);
+    if (!realA) return alert("用户不存在");
+    if (realA !== a) return alert("密保答案错误");
 
-    localStorage.setItem('pwd_'+user,newPwd)
-    alert('密码重置成功！请用新密码登录')
-    closeModal('findModal')
+    localStorage.setItem("pwd_" + u, newP);
+    alert("密码重置成功！");
+    closeModal("findModal");
 }
 
-// 修改密码
-function saveEditPwd(){
-    let oldPwd = document.getElementById('oldEditPwd').value.trim()
-    let newPwd = document.getElementById('newEditPwd').value.trim()
-    let username = localStorage.getItem('username')
+// 修改密码（管理员也能用）
+function doChangePwd() {
+    let user = localStorage.getItem("username");
+    let old = document.getElementById("oldPwd").value.trim();
+    let newP = document.getElementById("newPwd").value.trim();
 
-    let realOld = username==='admin'?'123456':localStorage.getItem('pwd_'+username)
-    if(oldPwd!==realOld) return alert('原密码错误')
-    if(newPwd.length<6) return alert('新密码至少6位')
+    let realOld = localStorage.getItem("pwd_" + user);
+    if (old !== realOld) return alert("原密码错误");
+    if (newP.length < 6) return alert("密码至少6位");
 
-    if(username==='admin'){
-        alert('管理员密码需后台手动修改')
-    }else{
-        localStorage.setItem('pwd_'+username,newPwd)
-        alert('密码修改成功，请重新登录')
-        closeModal('editPwdModal')
-        logout()
-    }
+    localStorage.setItem("pwd_" + user, newP);
+    alert("修改成功！请重新登录");
+    closeModal("editPwdModal");
+    logout();
 }
 
-// 展示管理员极简后台
-function showAdminPage(){
-    document.getElementById('authPage').style.display='none'
-    document.getElementById('adminPage').style.display='block'
-    document.getElementById('adminName').innerText = localStorage.getItem('username')||'管理员'
+// 进入后台
+function showAdmin() {
+    document.getElementById("authPage").style.display = "none";
+    document.getElementById("adminPage").style.display = "block";
+    document.getElementById("adminName").innerText = localStorage.getItem("username");
 }
 
-// 自动校验登录状态
-window.onload = function(){
-    if(localStorage.getItem('username')&&localStorage.getItem('role')){
-        showAdminPage()
-    }
-}
+// 自动登录
+window.onload = () => {
+    if (localStorage.getItem("username")) showAdmin();
+};
 </script>
 </body>
 </html>
